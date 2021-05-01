@@ -1,6 +1,6 @@
 @echo off
 if not defined DevEnvDir (
-    call vcvarsall.bat
+    call vcvarsall.bat x64
 )
 if [%1]==[] goto usage
 if %1==debug cl *.c user32.lib gdi32.lib Opengl32.lib /Fegame.exe

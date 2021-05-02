@@ -8,22 +8,19 @@
 #include <stdio.h>
 #include <assert.h>
 
-void resize_callback(int width, int height){
-    glViewport(0, 0, width, height);
+void resize_callback(){
+    glViewport(0, 0, current_window_size.width, current_window_size.height);
 }
 
 int main(){
-    int width = 800;
-    int height = 600;
-
-    int err = create_window("game", width, height);
+    int err = create_window("game", 800, 600);
     if(err){
         return 1;
     }
 
     set_resize_callback(resize_callback);
 
-    init_opengl_context(3, 3);
+    init_opengl(3, 3);
 
     set_swap_interval(1);
 
@@ -80,15 +77,29 @@ int main(){
 
     int running = 1;
 
-    #define fps_size 200
-    int average_fps_array[200];
+    #define fps_size 400
+    int average_fps_array[fps_size];
     for(int i = 0; i < fps_size; i++){
         average_fps_array[i] = -1;
     }
     int current_fps_pointer = 0;
 
+
+    glUseProgram(shader_program);
+    int m_location = glGetUniformLocation(shader_program, "m");
+    int v_location = glGetUniformLocation(shader_program, "v");
+    int p_location = glGetUniformLocation(shader_program, "p");
+
+    u64 last_time = get_time()-10000;
+
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    float rot = 0;
     while(1){
-        u64 start = get_time();
+        u64 current_time = get_time();
+        u64 delta_time = current_time-last_time;
+        last_time = current_time;
+
         running = event_loop();
         if(!running) break;
 
@@ -100,24 +111,20 @@ int main(){
         mat4 m = mat4_id();
         mat4 v = mat4_id();
         mat4 p = mat4_id();
-        m = mat4_mat4_mul(rotate_3d(rad(20), (vec3){0, 0, 1}), m);
-        m = mat4_mat4_mul(rotate_3d(rad(20), (vec3){0, 1, 0}), m);
-        v = mat4_mat4_mul(translate_3d(0, 0, -5), v);
-        p = perspective_projection(rad(45), (f32)width/height, 0.1, 1000);
+        m = mat4_mat4_mul(rotate_3d(rad(rot), (vec3){1, 0, 0}), m);
+        rot += 0.9;
+        v = mat4_mat4_mul(translate_3d(0, 0, -3), v);
+        p = perspective_projection(rad(45), (f32)current_window_size.width/(f32)current_window_size.height,
+                                    0.1, 1000);
 
-        int m_location = glGetUniformLocation(shader_program, "m");
-        int v_location = glGetUniformLocation(shader_program, "v");
-        int p_location = glGetUniformLocation(shader_program, "p");
         glUniformMatrix4fv(m_location, 1, GL_FALSE, m.v);
         glUniformMatrix4fv(v_location, 1, GL_FALSE, v.v);
         glUniformMatrix4fv(p_location, 1, GL_FALSE, p.v);
 
         glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/sizeof(float));
-
         swap_buffers();
 
-        u64 elapsed = (get_time()-start)/1000;
-        int current_fps = (int)(1000/(elapsed == 0 ? 1 : elapsed));
+        int current_fps = (int)(1000*1000/(delta_time == 0 ? 1 : delta_time));
         average_fps_array[current_fps_pointer] = current_fps;
         current_fps_pointer++;
         if(current_fps_pointer == fps_size-1) current_fps_pointer = 0;

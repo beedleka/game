@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-int init_opengl_context(int opengl_major_version, int opengl_minor_version);
+int init_opengl(int opengl_major_version, int opengl_minor_version);
 void swap_buffers();
 u16 load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename);
 void set_swap_interval(int interval);
@@ -31,6 +31,9 @@ void set_swap_interval(int interval);
 #define GL_VENDOR 0x1F00
 #define GL_RENDERER 0x1F01
 #define GL_VERSION 0x1F02
+#define GL_FRONT_AND_BACK 0x0408
+#define GL_LINE 0x1B01
+#define GL_FILL 0x1B02
 
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;

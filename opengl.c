@@ -91,9 +91,9 @@ static int load_wgl_functions(){
     10/ Load OpenGL functions
     11/ Check OpenGL extensions
 */
-int init_opengl_context(int opengl_major_version, int opengl_minor_version){
+int init_opengl(int opengl_major_version, int opengl_minor_version){
     if(device_context == NULL){
-        error("init_opengl_context: A window is needed for opengl context creation");
+        error("init_opengl: A window is needed for opengl context creation");
         return 1;
     }
 
@@ -188,11 +188,6 @@ int init_opengl_context(int opengl_major_version, int opengl_minor_version){
             if(str_equals(begin, size, "WGL_ARB_create_context_profile")) available_wgl_extensions.WGL_ARB_create_context_profile = 1;
             if(str_equals(begin, size, "WGL_EXT_swap_control")) available_wgl_extensions.WGL_EXT_swap_control  = 1;
             if(str_equals(begin, size, "WGL_ARB_pixel_format")) available_wgl_extensions.WGL_ARB_pixel_format  = 1;
-            // @Remove
-            // for(ptr i = 0; i < size; i++){
-            //     printf("%c", *(begin+i));
-            // }
-            // printf("\n");
         }
         begin = end;
     }
@@ -346,7 +341,6 @@ void swap_buffers(){
 void set_swap_interval(int interval){
     if(wglSwapIntervalEXT == NULL){
         error("set_swap_interval: wglSwapIntervalEXT isn't available");
-        return;
     }
     wglSwapIntervalEXT(interval);
 }

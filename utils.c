@@ -24,6 +24,17 @@ void error(const char* format, ...){
     va_list args;
     va_start(args, format);
     printf("[ERROR] ");
+    fflush(stdout);
+    vfprintf(stderr, format, args);
+    printf("\n");
+    va_end(args);
+}
+
+void warn(const char* format, ...){
+    va_list args;
+    va_start(args, format);
+    printf("[WARN] ");
+    fflush(stdout);
     vfprintf(stderr, format, args);
     printf("\n");
     va_end(args);
@@ -33,6 +44,7 @@ void info(const char* format, ...){
     va_list args;
     va_start(args, format);
     printf("[INFO] ");
+    fflush(stdout);
     vprintf(format, args);
     printf("\n");
     va_end(args);

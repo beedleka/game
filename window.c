@@ -1,5 +1,15 @@
 #include "window.h"
 
+WindowState current_window_state = WINDOWED;
+WindowSize current_window_size;
+WindowSize original_window_size;
+
+static void (*resize_callback)() = NULL;
+
+void window_set_resize_callback(void (*callback)(int, int)){
+    resize_callback = callback;
+}
+
 #ifdef _WIN32
 
 HWND window_handle;
@@ -7,24 +17,19 @@ HDC device_context;
 DWORD windowed_style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 DWORD fullscreen_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE;
 int quitting = 0;
-WindowState current_window_state = WINDOWED;
-WindowSize current_window_size;
-WindowSize original_window_size;
-
-static void (*resize_callback)() = NULL;
 
 void window_close(){
     quitting = 1;
     if(!ReleaseDC(window_handle, device_context)){
-        win32_print_last_error("[ERROR] ReleaseDC:");
+        win32_print_last_error("ReleaseDC:");
     }
 
     if(!DestroyWindow(window_handle)){
-        win32_print_last_error("[ERROR] DestroyWindow:");
+        win32_print_last_error("DestroyWindow:");
     }
 
     if(!UnregisterClass("window_class", GetModuleHandle(0))){
-        win32_print_last_error("[ERROR] UnregisterClass:");
+        win32_print_last_error("UnregisterClass:");
     }
 }
 
@@ -88,13 +93,13 @@ int window_create(char* title, int width, int height){
     window_class.lpszClassName = window_class_name;
 
     if(!RegisterClass(&window_class)){
-        win32_print_last_error("[ERROR] RegisterClass:");
+        win32_print_last_error("RegisterClass:");
         return 1;
     }
 
     RECT window_rect = {0, 0, width, height};
     if(!AdjustWindowRect(&window_rect, windowed_style, FALSE)){
-        win32_print_last_error("[ERROR] AdjustWindowRect:");
+        win32_print_last_error("AdjustWindowRect:");
         return 1;
     }
     int adjusted_width = window_rect.right-window_rect.left;
@@ -108,13 +113,13 @@ int window_create(char* title, int width, int height){
         NULL, NULL, window_class.hInstance, NULL);
 
     if(!window_handle){
-        win32_print_last_error("[ERROR] CreateWindowEx:");
+        win32_print_last_error("CreateWindowEx:");
         return 1;
     }
 
     device_context = GetDC(window_handle);
     if(device_context == NULL){
-        win32_print_last_error("[ERROR] CreateWindowEx:");
+        win32_print_last_error("CreateWindowEx:");
         return 1;
     }
 
@@ -136,12 +141,8 @@ int window_event(){
 void window_set_title(const char* title){
     if(quitting) return;
     if(!SetWindowTextA(window_handle, title)){
-        win32_print_last_error("[ERROR] SetWindowTextA:");
+        win32_print_last_error("SetWindowTextA:");
     }
-}
-
-void window_set_resize_callback(void (*callback)(int, int)){
-    resize_callback = callback;
 }
 
 void window_set_state(WindowState state){
@@ -172,5 +173,65 @@ void window_set_state(WindowState state){
                     original_window_size.height, TRUE);
     }
 }
+
+#elif __linux__
+
+#ifdef X11
+
+Display* display;
+Window window;
+Atom delete_window_atom;
+
+int window_create(char* title, int width, int height){
+    current_window_size.width = width;
+    current_window_size.height = height;
+    original_window_size.width = width;
+    original_window_size.height = height;
+
+    display = XOpenDisplay(0);
+    if(display == NULL){
+        error("XOpenDisplay: Failed to open display");
+        return 1;
+    }
+
+    window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, width, height,
+                                0, 0, 0);
+    XSetStandardProperties(display, window, title, title, None, NULL, 0, NULL);
+
+    XSelectInput(display, window, ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask);
+
+    delete_window_atom = XInternAtom(display, "WM_DELETE_WINDOW", 0);
+    XSetWMProtocols(display, window, &delete_window_atom, 1);
+
+    XMapWindow(display, window);
+
+    return 0;
+}
+
+int window_event(){
+    while(QLength(display)){
+        XEvent event;
+        XNextEvent(display, &event);
+
+        if(event.type == ClientMessage){
+            if(event.xclient.data.l[0] == (long int)delete_window_atom){
+                return 0;
+            }
+        }
+        else if(event.type == ConfigureNotify){
+            current_window_size.width = event.xconfigure.width;
+            current_window_size.height = event.xconfigure.height;
+            resize_callback();
+        }
+    }
+
+    return 1;
+}
+
+void window_set_title(const char* title){
+    XSetStandardProperties(display, window, title, title, None, NULL, 0, NULL);
+}
+
+#endif
 
 #endif

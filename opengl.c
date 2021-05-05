@@ -1,63 +1,112 @@
 #include "opengl.h"
 
+glCreateShader_TYPE glCreateShader;
+glShaderSource_TYPE glShaderSource;
+glCompileShader_TYPE glCompileShader;
+glGetShaderiv_TYPE glGetShaderiv;
+glDeleteShader_TYPE glDeleteShader;
+glGetShaderInfoLog_TYPE glGetShaderInfoLog;
+glCreateProgram_TYPE glCreateProgram;
+glAttachShader_TYPE glAttachShader;
+glLinkProgram_TYPE glLinkProgram;
+glGetProgramiv_TYPE glGetProgramiv;
+glGetProgramInfoLog_TYPE glGetProgramInfoLog;
+glDeleteProgram_TYPE glDeleteProgram;
+glGenBuffers_TYPE glGenBuffers;
+glBindBuffer_TYPE glBindBuffer;
+glBufferData_TYPE glBufferData;
+glVertexAttribPointer_TYPE glVertexAttribPointer;
+glEnableVertexAttribArray_TYPE glEnableVertexAttribArray;
+glUseProgram_TYPE glUseProgram;
+glGenVertexArrays_TYPE glGenVertexArrays;
+glBindVertexArray_TYPE glBindVertexArray;
+glUniformMatrix4fv_TYPE glUniformMatrix4fv;
+glGetUniformLocation_TYPE glGetUniformLocation;
+glGetStringi_TYPE glGetStringi;
+
+void* get_proc_address(const char* name){
+    #ifdef _WIN32
+        return wglGetProcAddress(name);
+    #elif __linux__
+    #ifdef X11
+        return glXGetProcAddress((const GLubyte *)name);
+    #endif
+    #endif
+}
+
 static int load_opengl_functions(){
-    glCreateShader = (glCreateShader_TYPE)wglGetProcAddress("glCreateShader");
+    glCreateShader = (glCreateShader_TYPE)get_proc_address("glCreateShader");
     if(glCreateShader == NULL) return 1;
-    glCompileShader = (glCompileShader_TYPE)wglGetProcAddress("glCompileShader");
+    glCompileShader = (glCompileShader_TYPE)get_proc_address("glCompileShader");
     if(glCompileShader == NULL) return 1;
-    glShaderSource = (glShaderSource_TYPE)wglGetProcAddress("glShaderSource");
+    glShaderSource = (glShaderSource_TYPE)get_proc_address("glShaderSource");
     if(glShaderSource == NULL) return 1;
-    glGetShaderiv = (glGetShaderiv_TYPE)wglGetProcAddress("glGetShaderiv");
+    glGetShaderiv = (glGetShaderiv_TYPE)get_proc_address("glGetShaderiv");
     if(glGetShaderiv == NULL) return 1;
-    glDeleteShader = (glDeleteShader_TYPE)wglGetProcAddress("glDeleteShader");
+    glDeleteShader = (glDeleteShader_TYPE)get_proc_address("glDeleteShader");
     if(glDeleteShader == NULL) return 1;
-    glGetShaderInfoLog = (glGetShaderInfoLog_TYPE)wglGetProcAddress("glGetShaderInfoLog");
+    glGetShaderInfoLog = (glGetShaderInfoLog_TYPE)get_proc_address("glGetShaderInfoLog");
     if(glGetShaderInfoLog == NULL) return 1;
-    glCreateProgram = (glCreateProgram_TYPE)wglGetProcAddress("glCreateProgram");
+    glCreateProgram = (glCreateProgram_TYPE)get_proc_address("glCreateProgram");
     if(glCreateProgram == NULL) return 1;
-    glAttachShader = (glAttachShader_TYPE)wglGetProcAddress("glAttachShader");
+    glAttachShader = (glAttachShader_TYPE)get_proc_address("glAttachShader");
     if(glAttachShader == NULL) return 1;
-    glLinkProgram = (glLinkProgram_TYPE)wglGetProcAddress("glLinkProgram");
+    glLinkProgram = (glLinkProgram_TYPE)get_proc_address("glLinkProgram");
     if(glLinkProgram == NULL) return 1;
-    glGetProgramiv = (glGetProgramiv_TYPE)wglGetProcAddress("glGetProgramiv");
+    glGetProgramiv = (glGetProgramiv_TYPE)get_proc_address("glGetProgramiv");
     if(glGetProgramiv == NULL) return 1;
-    glGetProgramInfoLog = (glGetProgramInfoLog_TYPE)wglGetProcAddress("glGetProgramInfoLog");
+    glGetProgramInfoLog = (glGetProgramInfoLog_TYPE)get_proc_address("glGetProgramInfoLog");
     if(glGetProgramInfoLog == NULL) return 1;
-    glDeleteProgram = (glDeleteProgram_TYPE)wglGetProcAddress("glDeleteProgram");
+    glDeleteProgram = (glDeleteProgram_TYPE)get_proc_address("glDeleteProgram");
     if(glDeleteProgram == NULL) return 1;
-    glGenBuffers = (glGenBuffers_TYPE)wglGetProcAddress("glGenBuffers");
+    glGenBuffers = (glGenBuffers_TYPE)get_proc_address("glGenBuffers");
     if(glGenBuffers == NULL) return 1;
-    glBindBuffer = (glBindBuffer_TYPE)wglGetProcAddress("glBindBuffer");
+    glBindBuffer = (glBindBuffer_TYPE)get_proc_address("glBindBuffer");
     if(glBindBuffer == NULL) return 1;
-    glBufferData = (glBufferData_TYPE)wglGetProcAddress("glBufferData");
+    glBufferData = (glBufferData_TYPE)get_proc_address("glBufferData");
     if(glBufferData == NULL) return 1;
-    glVertexAttribPointer = (glVertexAttribPointer_TYPE)wglGetProcAddress("glVertexAttribPointer");
+    glVertexAttribPointer = (glVertexAttribPointer_TYPE)get_proc_address("glVertexAttribPointer");
     if(glVertexAttribPointer == NULL) return 1;
-    glEnableVertexAttribArray = (glEnableVertexAttribArray_TYPE)wglGetProcAddress("glEnableVertexAttribArray");
+    glEnableVertexAttribArray = (glEnableVertexAttribArray_TYPE)get_proc_address("glEnableVertexAttribArray");
     if(glEnableVertexAttribArray == NULL) return 1;
-    glUseProgram = (glUseProgram_TYPE)wglGetProcAddress("glUseProgram");
+    glUseProgram = (glUseProgram_TYPE)get_proc_address("glUseProgram");
     if(glUseProgram == NULL) return 1;
-    glGenVertexArrays = (glGenVertexArrays_TYPE)wglGetProcAddress("glGenVertexArrays");
+    glGenVertexArrays = (glGenVertexArrays_TYPE)get_proc_address("glGenVertexArrays");
     if(glGenVertexArrays == NULL) return 1;
-    glBindVertexArray = (glBindVertexArray_TYPE)wglGetProcAddress("glBindVertexArray");
+    glBindVertexArray = (glBindVertexArray_TYPE)get_proc_address("glBindVertexArray");
     if(glBindVertexArray == NULL) return 1;
-    glUniformMatrix4fv = (glUniformMatrix4fv_TYPE)wglGetProcAddress("glUniformMatrix4fv");
+    glUniformMatrix4fv = (glUniformMatrix4fv_TYPE)get_proc_address("glUniformMatrix4fv");
     if(glUniformMatrix4fv == NULL) return 1;
-    glGetUniformLocation = (glGetUniformLocation_TYPE)wglGetProcAddress("glGetUniformLocation");
+    glGetUniformLocation = (glGetUniformLocation_TYPE)get_proc_address("glGetUniformLocation");
     if(glGetUniformLocation == NULL) return 1;
-    glGetStringi = (glGetStringi_TYPE)wglGetProcAddress("glGetStringi");
+    glGetStringi = (glGetStringi_TYPE)get_proc_address("glGetStringi");
     if(glGetStringi == NULL) return 1;
 
     return 0;
 }
 
+GLExtensions available_gl_extensions = {0};
+
+void check_opengl_extensions(){
+    int extensions_count;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &extensions_count);
+    for(int i = 0; i < extensions_count; i++){
+        const unsigned char* extension = glGetStringi(GL_EXTENSIONS, i);
+        if(strcmp((char*)extension, "GL_ARB_compute_shader")) available_gl_extensions.GL_ARB_compute_shader_available = 1;
+    }
+}
+
 #ifdef _WIN32
 
-static WGLExtensions available_wgl_extensions = {0};
-static GLExtensions available_gl_extensions = {0};
+wglGetExtensionsStringARB_TYPE wglGetExtensionsStringARB;
+wglCreateContextAttribsARB_TYPE wglCreateContextAttribsARB;
+wglChoosePixelFormatARB_TYPE wglChoosePixelFormatARB;
+wglSwapIntervalEXT_TYPE wglSwapIntervalEXT;
 
-static int load_wgl_functions(){
-    if(available_wgl_extensions.WGL_EXT_swap_control){
+WGLExtensions available_wgl_extensions = {0};
+
+int load_wgl_functions(){
+    if(available_wgl_extensions.WGL_EXT_swap_control_available){
         wglSwapIntervalEXT = (wglSwapIntervalEXT_TYPE)wglGetProcAddress("wglSwapIntervalEXT");
         if(wglSwapIntervalEXT == NULL) return 1;
     }
@@ -81,7 +130,7 @@ static int load_wgl_functions(){
 */
 int opengl_init(int opengl_major_version, int opengl_minor_version){
     if(device_context == NULL){
-        error("init_opengl: A window is needed for opengl context creation");
+        error("opengl_init: A window is needed for opengl context creation");
         return 1;
     }
 
@@ -92,7 +141,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
     dummy_class.lpszClassName = "dummy_window_class";
 
     if(!RegisterClass(&dummy_class)){
-        win32_print_last_error("[ERROR] RegisterClass:");
+        win32_print_last_error("RegisterClass:");
         return 1;
     }
 
@@ -104,7 +153,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
         0, 0, NULL, NULL, dummy_class.hInstance, NULL);
 
     if(!dummy_window_handle){
-        win32_print_last_error("[ERROR] CreateWindow:");
+        win32_print_last_error("CreateWindow:");
         return 1;
     }
 
@@ -130,23 +179,23 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
                             dummy_pixel_format_id,
                             sizeof(PIXELFORMATDESCRIPTOR),
                             &good_dummy_pixel_format)){
-        win32_print_last_error("[ERROR] DescribePixelFormat:");
+        win32_print_last_error("DescribePixelFormat:");
         return 1;
     }
 
     if(!SetPixelFormat(dummy_device_context, dummy_pixel_format_id, &good_dummy_pixel_format)){
-        win32_print_last_error("[ERROR] SetPixelFormat:");
+        win32_print_last_error("SetPixelFormat:");
         return 1;
     }
 
     HGLRC dummy_opengl_context = wglCreateContext(dummy_device_context);
     if(dummy_opengl_context == NULL){
-        win32_print_last_error("[ERROR] wglCreateContext:");
+        win32_print_last_error("wglCreateContext:");
         return 1;
     }
 
     if(!wglMakeCurrent(dummy_device_context, dummy_opengl_context)){
-        win32_print_last_error("[ERROR] wglMakeCurrent:");
+        win32_print_last_error("wglMakeCurrent:");
         return 1;
     }
 
@@ -172,23 +221,23 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
         size = end-begin;
 
         if(size > 0){
-            if(str_equals(begin, size, "WGL_ARB_create_context")) available_wgl_extensions.WGL_ARB_create_context = 1;
-            if(str_equals(begin, size, "WGL_ARB_create_context_profile")) available_wgl_extensions.WGL_ARB_create_context_profile = 1;
-            if(str_equals(begin, size, "WGL_EXT_swap_control")) available_wgl_extensions.WGL_EXT_swap_control  = 1;
-            if(str_equals(begin, size, "WGL_ARB_pixel_format")) available_wgl_extensions.WGL_ARB_pixel_format  = 1;
+            if(str_equals(begin, size, "WGL_ARB_create_context")) available_wgl_extensions.WGL_ARB_create_context_available = 1;
+            if(str_equals(begin, size, "WGL_ARB_create_context_profile")) available_wgl_extensions.WGL_ARB_create_context_profile_available = 1;
+            if(str_equals(begin, size, "WGL_EXT_swap_control")) available_wgl_extensions.WGL_EXT_swap_control_available  = 1;
+            if(str_equals(begin, size, "WGL_ARB_pixel_format")) available_wgl_extensions.WGL_ARB_pixel_format_available  = 1;
         }
         begin = end;
     }
 
-    if(!available_wgl_extensions.WGL_ARB_create_context){
+    if(!available_wgl_extensions.WGL_ARB_create_context_available){
         error("WGL_ARB_create_context not available");
         err = 1;
     }
-    if(!available_wgl_extensions.WGL_ARB_create_context_profile){
+    if(!available_wgl_extensions.WGL_ARB_create_context_profile_available){
         error("WGL_ARB_create_context_profile not available");
         err = 1;
     }
-    if(!available_wgl_extensions.WGL_ARB_pixel_format){
+    if(!available_wgl_extensions.WGL_ARB_pixel_format_available){
         error("WGL_ARB_pixel_format not available");
         err = 1;
     }
@@ -208,19 +257,19 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
     }
 
     if(!wglDeleteContext(dummy_opengl_context)){
-        win32_print_last_error("[ERROR] wglDeleteContext:");
+        win32_print_last_error("wglDeleteContext:");
         err = 1;
     }
     if(!ReleaseDC(dummy_window_handle, dummy_device_context)){
-        win32_print_last_error("[ERROR] ReleaseDC:");
+        win32_print_last_error("ReleaseDC:");
         err = 1;
     }
     if(!DestroyWindow(dummy_window_handle)){
-        win32_print_last_error("[ERROR] DestroyWindow:");
+        win32_print_last_error("DestroyWindow:");
         err = 1;
     }
     if(!UnregisterClass("dummy_window_class", dummy_class.hInstance)){
-        win32_print_last_error("[ERROR] UnregisterClass:");
+        win32_print_last_error("UnregisterClass:");
         err = 1;
     }
 
@@ -247,12 +296,12 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
                             pixel_format,
                             sizeof(PIXELFORMATDESCRIPTOR),
                             &good_pixel_format)){
-        win32_print_last_error("[ERROR] DescribePixelFormat:");
+        win32_print_last_error("DescribePixelFormat:");
         return 1;
     }
 
     if(!SetPixelFormat(device_context, pixel_format, &good_pixel_format)){
-        win32_print_last_error("[ERROR] SetPixelFormat:");
+        win32_print_last_error("SetPixelFormat:");
         return 1;
     }
 
@@ -285,19 +334,19 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
     }
 
     if(!wglMakeCurrent(device_context, opengl_context)){
-        win32_print_last_error("[ERROR] wglMakeCurrent:");
+        win32_print_last_error("wglMakeCurrent:");
         return 1;
     }
 
     err = load_wgl_functions();
     if(err){
-        win32_print_last_error("[ERROR] load_wgl_functions:");
+        win32_print_last_error("load_wgl_functions:");
         return 1;
     }
 
     err = load_opengl_functions();
     if(err){
-        win32_print_last_error("[ERROR] load_opengl_functions:");
+        win32_print_last_error("load_opengl_functions:");
         return 1;
     }
 
@@ -306,18 +355,12 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
     glGetIntegerv(GL_MAJOR_VERSION, &major);
     glGetIntegerv(GL_MINOR_VERSION, &minor);
     if(major != opengl_major_version || minor != opengl_minor_version){
-        error("Got wrong OpengGL version");
-        return 1;
+        warn("Got wrong OpengGL version");
     }
 
     info("Loaded OpenGL context %d.%d", major, minor);
 
-    int extensions_count;
-    glGetIntegerv(GL_NUM_EXTENSIONS, &extensions_count);
-    for(int i = 0; i < extensions_count; i++){
-        const unsigned char* extension = glGetStringi(GL_EXTENSIONS, i);
-        if(strcmp((char*)extension, "GL_ARB_compute_shader")) available_gl_extensions.GL_ARB_compute_shader = 1;
-    }
+    check_opengl_extensions();
 
     return 0;
 }
@@ -328,24 +371,171 @@ void opengl_swap_buffers(){
 
 void opengl_set_swap_interval(int interval){
     if(wglSwapIntervalEXT == NULL){
-        error("set_swap_interval: wglSwapIntervalEXT isn't available");
+        error("opengl_set_swap_interval: wglSwapIntervalEXT isn't available");
+        return;
     }
     wglSwapIntervalEXT(interval);
 }
 
+#elif __linux__
+
+glXCreateContextAttribsARB_TYPE glXCreateContextAttribsARB;
+glXSwapIntervalMESA_TYPE glXSwapIntervalMESA;
+
+GLXExtensions available_glx_extensions = {0};
+
+int load_glx_functions(){
+    if(available_glx_extensions.MESA_swap_control_available){
+        glXSwapIntervalMESA = (glXSwapIntervalMESA_TYPE)glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalMESA");
+    }
+
+    return 0;
+}
+
+int opengl_init(int opengl_major_version, int opengl_minor_version){
+    int glx_major, glx_minor;
+    if(!glXQueryVersion(display, &glx_major, &glx_minor) ||
+        (glx_major < 1) || (glx_major == 1 && glx_minor < 3)){
+        error("opengl_init: GLX version must be at least 1.3");
+        return 1;
+    }
+
+    const char* glx_extensions_string = glXQueryExtensionsString(display, DefaultScreen(display));
+    const char* begin = glx_extensions_string;
+    const char* end = begin;
+    ptr size;
+
+    while(*begin != '\0'){
+        while(*begin == ' ') begin++;
+        end = begin;
+        while(*end != '\0' && *end != ' ') end++;
+        size = end-begin;
+
+        if(size > 0){
+            if(str_equals(begin, size, "GLX_ARB_create_context")) available_glx_extensions.GLX_ARB_create_context_available = 1;
+            if(str_equals(begin, size, "GLX_ARB_create_context_profile")) available_glx_extensions.GLX_ARB_create_context_profile_available = 1;
+            if(str_equals(begin, size, "MESA_swap_control")) available_glx_extensions.MESA_swap_control_available = 1;
+        }
+        begin = end;
+    }
+
+    if(!available_glx_extensions.GLX_ARB_create_context_available){
+        error("GLX_ARB_create_context not available");
+        return 1;
+    }
+
+    if(!available_glx_extensions.GLX_ARB_create_context_profile_available){
+        error("GLX_ARB_create_context_profile not available");
+        return 1;
+    }
+
+    int visual_attributes[] = {
+        GLX_X_RENDERABLE, 1,
+        GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+        GLX_RENDER_TYPE, GLX_RGBA_BIT,
+        GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
+        GLX_DOUBLEBUFFER, 1,
+        GLX_RED_SIZE, 1,
+        GLX_GREEN_SIZE, 1,
+        GLX_BLUE_SIZE, 1,
+        GLX_ALPHA_SIZE, 8,
+        GLX_DEPTH_SIZE, 24,
+        0
+    };
+
+    int num_framebuffer_config = 0;
+    GLXFBConfig* framebuffer_config = glXChooseFBConfig(display,
+                                    DefaultScreen(display), visual_attributes, &num_framebuffer_config);
+    if(!framebuffer_config){
+        error("glXChooseFBConfig: Failed to get framebuffer config");
+        return 1;
+    }
+
+    glXCreateContextAttribsARB = (glXCreateContextAttribsARB_TYPE)glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+    if(glXCreateContextAttribsARB == NULL){
+        error("glXCreateContextAttribsARB is NULL");
+        return 1;
+    }
+
+    const int context_attributes[] = {
+        GLX_CONTEXT_MAJOR_VERSION_ARB, opengl_major_version,
+        GLX_CONTEXT_MINOR_VERSION_ARB, opengl_minor_version,
+        GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+        0,
+    };
+
+    GLXContext opengl_context = glXCreateContextAttribsARB(display, framebuffer_config[0],
+                                0, 1, context_attributes);
+    XFree(framebuffer_config);
+    if(!opengl_context){
+        error("glXCreateContextAttribsARB: Failed to create context");
+        return 1;
+    }
+
+    int err = load_glx_functions();
+    if(err){
+        error("load_glx_functions: Failed to load GLX functions");
+        return 1;
+    }
+
+
+    err = load_opengl_functions();
+    if(err){
+        error("load_opengl_functions: Failed to load OpenGL functions");
+        return 1;
+    }
+
+    glXMakeCurrent(display, window, opengl_context);
+
+    int major;
+    int minor;
+    glGetIntegerv(GL_MAJOR_VERSION, &major);
+    glGetIntegerv(GL_MINOR_VERSION, &minor);
+    info("Loaded OpenGL context %d.%d", major, minor);
+
+    if(major != opengl_major_version || minor != opengl_minor_version){
+        warn("Got wrong OpengGL version");
+    }
+
+    check_opengl_extensions();
+
+    return 0;
+}
+
+void opengl_swap_buffers(){
+    glXSwapBuffers(display, window);
+}
+
+void opengl_set_swap_interval(int interval){
+    if(glXSwapIntervalMESA == NULL){
+        error("opengl_set_swap_interval: glXSwapIntervalMESA isn't available");
+        return;
+    }
+    glXSwapIntervalMESA(interval);
+}
+
 #endif
+
+void opengl_set_viewport(int x, int y, int width, int height){
+    glViewport(x, y, width, height);
+}
+
+void opengl_clear(Vec4 clear_color){
+    glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
 
 u32 opengl_load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename){
     FILE* vertex_shader_file = fopen(vertex_shader_filename, "rb");
     FILE* fragment_shader_file = fopen(fragment_shader_filename, "rb");
 
     if(vertex_shader_file == NULL){
-        error("load_shader: no such file or directory \"%s\"", vertex_shader_filename);
+        error("opengl_load_shader: no such file or directory \"%s\"", vertex_shader_filename);
         return 0;
     }
 
     if(fragment_shader_file == NULL){
-        error("load_shader: no such file or directory \"%s\"", fragment_shader_filename);
+        error("opengl_load_shader: no such file or directory \"%s\"", fragment_shader_filename);
         return 0;
     }
 
@@ -365,7 +555,7 @@ u32 opengl_load_shader(const char* vertex_shader_filename, const char* fragment_
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
     if(!success){
         glGetShaderInfoLog(vertex_shader, 512, NULL, info);
-        error("load_shader: Failed to compile vertex shader:\n%s", info);
+        error("opengl_load_shader: Failed to compile vertex shader:\n%s", info);
         glDeleteShader(vertex_shader);
         return 0;
     }
@@ -382,7 +572,7 @@ u32 opengl_load_shader(const char* vertex_shader_filename, const char* fragment_
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
     if(!success){
         glGetShaderInfoLog(fragment_shader, 512, NULL, info);
-        error("load_shader: Failed to compile fragment shader:\n%s", info);
+        error("opengl_load_shader: Failed to compile fragment shader:\n%s", info);
         glDeleteShader(fragment_shader);
         return 0;
     }
@@ -399,7 +589,7 @@ u32 opengl_load_shader(const char* vertex_shader_filename, const char* fragment_
     if(!success){
         glGetProgramInfoLog(shader_program, 512, NULL, info);
         glDeleteProgram(shader_program);
-        error("load_shader: Failed to link shader program:\n%s", info);
+        error("opengl_load_shader: Failed to link shader program:\n%s", info);
         return 0;
     }
 

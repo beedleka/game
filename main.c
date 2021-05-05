@@ -57,12 +57,12 @@ int main(){
         return 1;
     }
 
-    window_set_resize_callback(resize_callback);
-
     err = renderer_init();
     if(err){
         return 1;
     }
+
+    window_set_resize_callback(resize_callback);
 
     u32 shader = renderer_load_shader("shaders/test_vertex.glsl", "shaders/test_fragment.glsl");
 
@@ -84,8 +84,9 @@ int main(){
         last_time = current_time;
         int current_fps = (int)(1000*1000/(delta_time == 0 ? 1 : delta_time));
         char fps[50];
-        sprintf(fps, "%d fps\n", current_fps);
-        window_set_title(fps);
+        // printf("%d fps\n", current_fps);
+
+        cube.transform.position.x += 0.01;
 
         if(!window_event()) break;
         renderer_clear((Vec4){1.0f, 1.0f, 1.0f, 1.0f});

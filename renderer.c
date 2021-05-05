@@ -9,7 +9,7 @@ int renderer_init(){
 }
 
 void renderer_set_viewport(int x, int y, int width, int height){
-    glViewport(x, y, width, height);
+    opengl_set_viewport(x, y, width, height);
 }
 
 void renderer_set_swap_interval(int interval){
@@ -17,8 +17,7 @@ void renderer_set_swap_interval(int interval){
 }
 
 void renderer_clear(Vec4 clear_color){
-    glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    opengl_clear(clear_color);
 }
 
 void renderer_swap_buffers(){
@@ -64,7 +63,7 @@ void renderer_update(){
 
 void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_count, u32 shader_program){
     if(living_renderables == MAX_RENDERABLES){
-        error("[ERROR] Maximum renderables reached");
+        error("Maximum renderables reached");
         return;
     }
 

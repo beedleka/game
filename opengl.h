@@ -6,11 +6,6 @@
 
 #include <stdio.h>
 
-int init_opengl(int opengl_major_version, int opengl_minor_version);
-void swap_buffers();
-u16 load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename);
-void set_swap_interval(int interval);
-
 #define GL_VERTEX_SHADER 0x8B31
 #define GL_FRAGMENT_SHADER 0x8B30
 #define GL_COMPILE_STATUS 0x8B81
@@ -35,6 +30,14 @@ void set_swap_interval(int interval);
 #define GL_LINE 0x1B01
 #define GL_FILL 0x1B02
 
+#if defined(_WIN32) && !defined(APIENTRY)
+#define APIENTRY __stdcall
+#endif
+
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
 typedef unsigned int GLbitfield;
@@ -57,13 +60,10 @@ typedef char GLchar;
 typedef char GLcharARB;
 typedef size_t GLsizeiptr;
 
-#if defined(_WIN32) && !defined(APIENTRY)
-#define APIENTRY __stdcall
-#endif
-
-#ifndef APIENTRY
-#define APIENTRY
-#endif
+int opengl_init(int opengl_major_version, int opengl_minor_version);
+void opengl_swap_buffers();
+u32 opengl_load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename);
+void opengl_set_swap_interval(int interval);
 
 typedef GLuint (APIENTRY* glCreateShader_TYPE)(GLenum);
 glCreateShader_TYPE glCreateShader;
@@ -131,6 +131,17 @@ glGetStringi_TYPE glGetStringi;
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
 #define ERROR_INVALID_VERSION_ARB 0x2095
 #define ERROR_INVALID_PROFILE_ARB 0x2096
+
+typedef struct WGLExtensions{
+    int WGL_ARB_create_context;
+    int WGL_ARB_create_context_profile;
+    int WGL_EXT_swap_control;
+    int WGL_ARB_pixel_format;
+} WGLExtensions;
+
+typedef struct GLExtensions{
+    int GL_ARB_compute_shader;
+} GLExtensions;
 
 typedef const char* (APIENTRY* wglGetExtensionsStringARB_TYPE)(HDC);
 wglGetExtensionsStringARB_TYPE wglGetExtensionsStringARB;

@@ -5,19 +5,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct window_size{
+typedef struct WindowSize{
     int width;
     int height;
-} window_size;
+} WindowSize;
 
-typedef enum window_state{
+typedef enum WindowState{
     WINDOWED,
     WINDOWED_FULLSCREEN,
     FULLSCREEN,
-} window_state;
+} WindowState;
 
-extern window_state current_window_state;
-extern window_size current_window_size;
+extern WindowState current_window_state;
+extern WindowSize current_window_size;
 
 #ifdef _WIN32
 
@@ -25,12 +25,12 @@ extern window_size current_window_size;
 
 extern HDC device_context;
 
-void close_window();
-int create_window(char* title, int width, int height);
-int event_loop();
-void set_window_title(const char* title);
-void set_resize_callback(void (*callback)(int, int));
-void set_fullscreen(window_state state);
+void window_close();
+int window_create(char* title, int width, int height);
+int window_event();
+void window_set_title(const char* title);
+void window_set_resize_callback(void (*callback)());
+void window_set_state(WindowState state);
 
 void win32_print_last_error(char* msg);
 

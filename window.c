@@ -7,13 +7,13 @@ HDC device_context;
 DWORD windowed_style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 DWORD fullscreen_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE;
 int quitting = 0;
-window_state current_window_state = WINDOWED;
-window_size current_window_size;
-window_size original_window_size;
+WindowState current_window_state = WINDOWED;
+WindowSize current_window_size;
+WindowSize original_window_size;
 
 static void (*resize_callback)() = NULL;
 
-void close_window(){
+void window_close(){
     quitting = 1;
     if(!ReleaseDC(window_handle, device_context)){
         win32_print_last_error("[ERROR] ReleaseDC:");
@@ -40,19 +40,19 @@ static LRESULT CALLBACK window_procedure(HWND window_handle, UINT message, WPARA
         case WM_KEYDOWN:
             switch(w_param){
                 case VK_ESCAPE:
-                    close_window();
+                    window_close();
                     break;
                 case VK_F11:
                     if(current_window_state == WINDOWED){
-                        set_fullscreen(WINDOWED_FULLSCREEN);
+                        window_set_state(WINDOWED_FULLSCREEN);
                     }
                     else{
-                        set_fullscreen(WINDOWED);
+                        window_set_state(WINDOWED);
                     }
             }
             break;
         case WM_CLOSE:
-            close_window();
+            window_close();
             break;
         case WM_DESTROY:
             PostQuitMessage(0);
@@ -74,7 +74,7 @@ void win32_print_last_error(char* msg){
     error("%s %S", msg, buff);
 }
 
-int create_window(char* title, int width, int height){
+int window_create(char* title, int width, int height){
     current_window_size.width = width;
     current_window_size.height = height;
     original_window_size.width = width;
@@ -123,7 +123,7 @@ int create_window(char* title, int width, int height){
     return 0;
 }
 
-int event_loop(){
+int window_event(){
     MSG message;
     PeekMessage(&message, NULL, 0, 0, PM_REMOVE);
     if(message.message != WM_QUIT){
@@ -133,21 +133,22 @@ int event_loop(){
     return message.message != WM_QUIT;
 }
 
-void set_window_title(const char* title){
+void window_set_title(const char* title){
     if(quitting) return;
     if(!SetWindowTextA(window_handle, title)){
         win32_print_last_error("[ERROR] SetWindowTextA:");
     }
 }
 
-void set_resize_callback(void (*callback)(int, int)){
+void window_set_resize_callback(void (*callback)(int, int)){
     resize_callback = callback;
 }
 
-void set_fullscreen(window_state state){
+void window_set_state(WindowState state){
     current_window_state = state;
 
     if(current_window_state == WINDOWED_FULLSCREEN){
+        // @Note Investigate difference between "exclusive fullscreen" and "borderless fullscreen"
         // DEVMODE graphics_mode = {0};
         // graphics_mode.dmSize = sizeof(DEVMODE);
         // graphics_mode.dmPelsWidth = GetSystemMetrics(SM_CXSCREEN);

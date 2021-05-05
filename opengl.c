@@ -53,20 +53,8 @@ static int load_opengl_functions(){
 
 #ifdef _WIN32
 
-typedef struct wgl_extensions{
-    int WGL_ARB_create_context;
-    int WGL_ARB_create_context_profile;
-    int WGL_EXT_swap_control;
-    int WGL_ARB_pixel_format;
-} wgl_extensions;
-
-static wgl_extensions available_wgl_extensions = {0};
-
-typedef struct gl_extensions{
-    int GL_ARB_compute_shader;
-} gl_extensions;
-
-static gl_extensions available_gl_extensions = {0};
+static WGLExtensions available_wgl_extensions = {0};
+static GLExtensions available_gl_extensions = {0};
 
 static int load_wgl_functions(){
     if(available_wgl_extensions.WGL_EXT_swap_control){
@@ -91,7 +79,7 @@ static int load_wgl_functions(){
     10/ Load OpenGL functions
     11/ Check OpenGL extensions
 */
-int init_opengl(int opengl_major_version, int opengl_minor_version){
+int opengl_init(int opengl_major_version, int opengl_minor_version){
     if(device_context == NULL){
         error("init_opengl: A window is needed for opengl context creation");
         return 1;
@@ -334,11 +322,11 @@ int init_opengl(int opengl_major_version, int opengl_minor_version){
     return 0;
 }
 
-void swap_buffers(){
+void opengl_swap_buffers(){
     SwapBuffers(device_context);
 }
 
-void set_swap_interval(int interval){
+void opengl_set_swap_interval(int interval){
     if(wglSwapIntervalEXT == NULL){
         error("set_swap_interval: wglSwapIntervalEXT isn't available");
     }
@@ -347,7 +335,7 @@ void set_swap_interval(int interval){
 
 #endif
 
-u16 load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename){
+u32 opengl_load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename){
     FILE* vertex_shader_file = fopen(vertex_shader_filename, "rb");
     FILE* fragment_shader_file = fopen(fragment_shader_filename, "rb");
 
@@ -368,7 +356,7 @@ u16 load_shader(const char* vertex_shader_filename, const char* fragment_shader_
     const char* tmp;
     load_file_to_buffer(vertex_shader_file, &vertex_shader_text);
     fclose(vertex_shader_file);
-    u16 vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    u32 vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     tmp = vertex_shader_text;
     glShaderSource(vertex_shader, 1, &tmp, NULL);
     free(vertex_shader_text);
@@ -385,7 +373,7 @@ u16 load_shader(const char* vertex_shader_filename, const char* fragment_shader_
     char* fragment_shader_text;
     load_file_to_buffer(fragment_shader_file, &fragment_shader_text);
     fclose(fragment_shader_file);
-    u16 fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    u32 fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     tmp = fragment_shader_text;
     glShaderSource(fragment_shader, 1, &tmp, NULL);
     free(fragment_shader_text);
@@ -399,7 +387,7 @@ u16 load_shader(const char* vertex_shader_filename, const char* fragment_shader_
         return 0;
     }
 
-    u16 shader_program = glCreateProgram();
+    u32 shader_program = glCreateProgram();
     glAttachShader(shader_program, vertex_shader);
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);

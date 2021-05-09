@@ -119,16 +119,11 @@ Mat4 scale_3d(Vec3 s){
     };
 }
 
-Mat4 rotate_3d(f32 angle, Vec3 axis){
-    f32 c = cos(angle);
-    f32 s = sin(angle);
-    f32 x = axis.x;
-    f32 y = axis.y;
-    f32 z = axis.z;
+Mat4 rotate_3d(Vec3 r){
     return (Mat4){
-        c+x*x*(1-c), y*x*(1-c)+z*s, z*x*(1-c)-y*s, 0,
-        x*y*(1-c)-z*s, c+y*y*(1-c), z*y*(1-c)+x*s, 0,
-        x*z*(1-c)+y*s, y*z*(1-c)-x*s, c+z*z*(1-c), 0,
+        cos(r.y)*cos(r.z), cos(r.y)*sin(r.z), -sin(r.y), 0,
+        sin(r.x)*sin(r.y)*cos(r.z)-cos(r.x)*sin(r.z), sin(r.x)*sin(r.y)*sin(r.z)+cos(r.x)*cos(r.z), sin(r.x)*cos(r.y), 0,
+        cos(r.x)*sin(r.y)*cos(r.z)+sin(r.x)*sin(r.z), cos(r.x)*sin(r.y)*sin(r.z)-sin(r.x)*cos(r.z), cos(r.x)*cos(r.y), 0,
         0, 0, 0, 1
     };
 }

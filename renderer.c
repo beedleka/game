@@ -29,6 +29,9 @@ u32 renderer_load_shader(const char* vertex_shader_filename, const char* fragmen
 }
 
 void renderer_update(){
+    renderer_clear((Vec4){1.0f, 1.0f, 1.0f, 1.0f});
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
     for(int i = 0; i < living_renderables; i++){
         glUseProgram(renderables[i]->shader_program);
         glBindVertexArray(renderables[i]->vertex_array_object);
@@ -36,9 +39,10 @@ void renderer_update(){
         Mat4 m = Mat4_id();
         Mat4 v = Mat4_id();
         Mat4 p = Mat4_id();
-        m = Mat4_Mat4_mul(scale_3d(renderables[i]->transform.scale), m);
-        // m = Mat4_Mat4_mul(rotate_3d(renderables[i]->transform->rotation, m);
+
         m = Mat4_Mat4_mul(translate_3d(renderables[i]->transform.position), m);
+        m = Mat4_Mat4_mul(rotate_3d(renderables[i]->transform.rotation), m);
+        m = Mat4_Mat4_mul(scale_3d(renderables[i]->transform.scale), m);
 
         p = perspective_projection(rad(45), (f32)current_window_size.width/(f32)current_window_size.height,
                                     0.1, 100);
@@ -59,6 +63,8 @@ void renderer_update(){
 
         glDrawArrays(GL_TRIANGLES, 0, renderables[i]->vertex_count);
     }
+
+    renderer_swap_buffers();
 }
 
 void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_count, u32 shader_program){
@@ -73,8 +79,10 @@ void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_coun
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, vertex_count*sizeof(f32), vertex_buffer, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(f32), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4*sizeof(f32), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4*sizeof(f32), (void*)(3*sizeof(f32)));
+    glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 
     glUseProgram(shader_program);
@@ -86,7 +94,7 @@ void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_coun
     renderable->shader_program = shader_program;
     renderable->rasterization_mode = SOLID;
 
-    renderable->transform.position = (Vec3){0, 0, -3};
+    renderable->transform.position = (Vec3){0, 0, 0};
     renderable->transform.scale = (Vec3){1, 1, 1};
     renderable->transform.rotation = (Vec3){0, 0, 0};
 

@@ -4,10 +4,17 @@ WindowState current_window_state = WINDOWED;
 WindowSize current_window_size;
 WindowSize original_window_size;
 
-static void (*resize_callback)() = NULL;
+KeyState keyboard[MAX_KEYCODES] = {RELEASED};
 
-void window_set_resize_callback(void (*callback)(int, int)){
+static void (*resize_callback)() = NULL;
+static void (*input_callback)(uint, KeyState) = NULL;
+
+void window_set_resize_callback(void (*callback)()){
     resize_callback = callback;
+}
+
+void window_set_input_callback(void (*callback)(uint, KeyState)){
+    input_callback = callback;
 }
 
 #ifdef _WIN32
@@ -43,18 +50,12 @@ static LRESULT CALLBACK window_procedure(HWND window_handle, UINT message, WPARA
             }
             break;
         case WM_KEYDOWN:
-            switch(w_param){
-                case VK_ESCAPE:
-                    window_close();
-                    break;
-                case VK_F11:
-                    if(current_window_state == WINDOWED){
-                        window_set_state(WINDOWED_FULLSCREEN);
-                    }
-                    else{
-                        window_set_state(WINDOWED);
-                    }
-            }
+            input_callback(w_param, PRESSED);
+            keyboard[w_param] = PRESSED;
+            break;
+        case WM_KEYUP:
+            input_callback(w_param, RELEASED);
+            keyboard[w_param] = RELEASED;
             break;
         case WM_CLOSE:
             window_close();
@@ -124,6 +125,9 @@ int window_create(char* title, int width, int height){
     }
 
     ShowWindow(window_handle, 5);
+
+    // @Note for some reason sometimes the cursor is loading?
+    SetCursor(LoadCursor(NULL, IDC_ARROW));
 
     return 0;
 }

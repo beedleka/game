@@ -36,6 +36,8 @@ typedef union{
     };
 } Vec4;
 
+typedef Vec4 Quaternion;
+
 typedef union{
     f32 v[9];
     struct{
@@ -55,18 +57,33 @@ typedef union{
     };
 } Mat4;
 
-Mat3 Mat3_id();
-Mat4 Mat4_id();
-Mat4 Mat4_Mat4_add(Mat4 a, Mat4 b);
-Mat4 Mat4_Mat4_mul(Mat4 a, Mat4 b);
-Mat3 Mat3_Mat3_add(Mat3 a, Mat3 b);
-Mat3 Mat3_Mat3_mul(Mat3 a, Mat3 b);
-Vec3 Mat3_Vec3_mul(Mat3 a, Vec3 b);
-Vec4 Mat4_Vec4_mul(Mat4 a, Vec4 b);
+Mat3 mat3_id();
+Mat3 mat3_mat3_add(Mat3 a, Mat3 b);
+Mat3 mat3_mat3_mul(Mat3 a, Mat3 b);
+Vec3 mat3_vec3_mul(Mat3 a, Vec3 b);
 
-Mat4 perspective_projection(f32 fov, f32 aspect_ratio, f32 z_near, f32 z_far);
-Mat4 translate_3d(Vec3 t);
-Mat4 scale_3d(Vec3 s);
-Mat4 rotate_3d(Vec3 r);
+Mat4 mat4_id();
+Mat4 mat4_mat4_add(Mat4 a, Mat4 b);
+Mat4 mat4_mat4_mul(Mat4 a, Mat4 b);
+Vec4 mat4_vec4_mul(Mat4 a, Vec4 b);
+
+Vec3 vec3_cross_product(Vec3 a, Vec3 b);
+f32 vec3_dot_product(Vec3 a, Vec3 b);
+f32 vec3_magnitude(Vec3 v);
+Vec3 vec3_normalize(Vec3 v);
+
+f32 vec4_magnitude(Vec4 v);
+Vec4 vec4_normalize(Vec4 v);
+
+Quaternion quat_id();
+Quaternion euler_to_quat(Vec3 e);
+Quaternion quat_quat_mul(Quaternion a, Quaternion b);
+f32 quat_magnitude(Quaternion q);
+Quaternion quat_normalize(Quaternion q);
+
+Mat4 perspective_projection_matrix(f32 fov, f32 aspect_ratio, f32 z_near, f32 z_far);
+Mat4 translate_3d_matrix(Vec3 t);
+Mat4 scale_3d_matrix(Vec3 s);
+Mat4 rotate_3d_matrix(Quaternion q);
 
 f32 rad(f32 deg);

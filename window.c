@@ -23,10 +23,8 @@ HWND window_handle;
 HDC device_context;
 DWORD windowed_style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 DWORD fullscreen_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE;
-int quitting = 0;
 
 void window_close(){
-    quitting = 1;
     if(!ReleaseDC(window_handle, device_context)){
         win32_print_last_error("ReleaseDC:");
     }
@@ -38,6 +36,7 @@ void window_close(){
     if(!UnregisterClass("window_class", GetModuleHandle(0))){
         win32_print_last_error("UnregisterClass:");
     }
+    window_handle = NULL;
 }
 
 static LRESULT CALLBACK window_procedure(HWND window_handle, UINT message, WPARAM w_param, LPARAM l_param){
@@ -126,8 +125,7 @@ int window_create(char* title, int width, int height){
 
     ShowWindow(window_handle, 5);
 
-    // @Note for some reason sometimes the cursor is loading?
-    SetCursor(LoadCursor(NULL, IDC_ARROW));
+    ShowCursor(FALSE);
 
     return 0;
 }
@@ -143,7 +141,7 @@ int window_event(){
 }
 
 void window_set_title(const char* title){
-    if(quitting) return;
+    if(window_handle == NULL) return;
     if(!SetWindowTextA(window_handle, title)){
         win32_print_last_error("SetWindowTextA:");
     }
@@ -176,6 +174,13 @@ void window_set_state(WindowState state){
                     original_window_size.width,
                     original_window_size.height, TRUE);
     }
+}
+
+void window_set_cursor_to_center(){
+    if(window_handle == NULL) return;
+    RECT rect;
+    GetWindowRect(window_handle, &rect);
+    SetCursorPos((rect.right+rect.left)/2, (rect.top+rect.bottom)/2);
 }
 
 #elif __linux__

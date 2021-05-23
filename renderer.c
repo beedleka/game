@@ -24,33 +24,37 @@ void renderer_swap_buffers(){
     opengl_swap_buffers();
 }
 
-u32 renderer_load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename){
-    return opengl_load_shader(vertex_shader_filename, fragment_shader_filename);
-}
-
-void renderer_update(){
-    renderer_clear((Vec4){1.0f, 1.0f, 1.0f, 1.0f});
+void renderer_update(Camera* camera){
+    renderer_clear(camera->clear_color);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+
+    Mat4 p = mat4_id();
+    p = perspective_projection_matrix(rad(camera->field_of_view),
+                                (f32)current_window_size.width/(f32)current_window_size.height,
+                                camera->near_plane, camera->far_plane);
+
     for(int i = 0; i < living_renderables; i++){
-        glUseProgram(renderables[i]->shader_program);
+        glUseProgram(renderables[i]->shader.shader_program);
         glBindVertexArray(renderables[i]->vertex_array_object);
 
-        Mat4 m = Mat4_id();
-        Mat4 v = Mat4_id();
-        Mat4 p = Mat4_id();
+        Mat4 m = mat4_id();
+        Mat4 v = mat4_id();
 
-        m = Mat4_Mat4_mul(translate_3d(renderables[i]->transform.position), m);
-        m = Mat4_Mat4_mul(rotate_3d(renderables[i]->transform.rotation), m);
-        m = Mat4_Mat4_mul(scale_3d(renderables[i]->transform.scale), m);
+        m = mat4_mat4_mul(translate_3d_matrix(renderables[i]->transform.position), m);
+        m = mat4_mat4_mul(rotate_3d_matrix(renderables[i]->transform.rotation), m);
+        m = mat4_mat4_mul(scale_3d_matrix(renderables[i]->transform.scale), m);
 
-        p = perspective_projection(rad(45), (f32)current_window_size.width/(f32)current_window_size.height,
-                                    0.1, 100);
+        Mat4 mvp = mat4_id();
+        mvp = mat4_mat4_mul(m, mat4_mat4_mul(p, v));
 
-        Mat4 mvp = Mat4_id();
-        mvp = Mat4_Mat4_mul(m, Mat4_Mat4_mul(p, v));
+        glUniformMatrix4fv(renderables[i]->shader.mvp_location, 1, GL_FALSE, mvp.v);
 
-        glUniformMatrix4fv(renderables[i]->mvp_location, 1, GL_FALSE, mvp.v);
+        if(renderables[i]->enable_face_culling){
+            glEnable(GL_CULL_FACE);
+        }
+        else{
+            glDisable(GL_CULL_FACE);
+        }
 
         switch(renderables[i]->rasterization_mode){
             case SOLID:
@@ -67,7 +71,7 @@ void renderer_update(){
     renderer_swap_buffers();
 }
 
-void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_count, u32 shader_program){
+void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_count, Shader shader){
     if(living_renderables == MAX_RENDERABLES){
         error("Maximum renderables reached");
         return;
@@ -85,21 +89,38 @@ void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_coun
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 
-    glUseProgram(shader_program);
-
     renderable->vertex_count = vertex_count;
-    renderable->mvp_location = glGetUniformLocation(shader_program, "mvp");
     renderable->vertex_buffer = vertex_buffer;
     renderable->vertex_array_object = vao;
-    renderable->shader_program = shader_program;
+    renderable->shader = shader;
     renderable->rasterization_mode = SOLID;
-
     renderable->transform.position = (Vec3){0, 0, 0};
     renderable->transform.scale = (Vec3){1, 1, 1};
-    renderable->transform.rotation = (Vec3){0, 0, 0};
+    renderable->transform.rotation = (Quaternion){0, 0, 0, 1};
+    renderable->enable_face_culling = 1;
 
     renderables[living_renderables] = renderable;
     living_renderables++;
+}
+
+void init_shader(Shader* shader, const char* vertex_shader_filename, const char* fragment_shader_filename){
+    u32 shader_program = opengl_load_shader(vertex_shader_filename, fragment_shader_filename);
+    if(shader_program != 0){
+        shader->shader_program = shader_program;
+        glUseProgram(shader_program);
+        shader->mvp_location = glGetUniformLocation(shader_program, "mvp");
+    }
+}
+
+void init_camera(Camera* camera, Vec3 position, Vec3 rotation, f32 field_of_view, f32 near_plane,
+                f32 far_plane,
+                Vec4 clear_color){
+    camera->position = position;
+    camera->rotation = rotation;
+    camera->field_of_view = field_of_view;
+    camera->near_plane = near_plane;
+    camera->far_plane = far_plane;
+    camera->clear_color = clear_color;
 }
 
 void renderer_close(){

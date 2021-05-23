@@ -12,6 +12,8 @@ void resize_callback(){
     renderer_set_viewport(0, 0, current_window_size.width, current_window_size.height);
 }
 
+int confine_cursor = 0;
+
 void input_callback(uint keycode, KeyState key_state){
     if(keycode == KEY_ESCAPE && key_state == PRESSED){
         window_close();
@@ -35,9 +37,6 @@ void input_callback(uint keycode, KeyState key_state){
 Renderable cube2; // @Remove
 
 void handle_input(f32 delta_time){
-    f32 speed = 2;
-    speed *= delta_time;
-
     if(keyboard[KEY_D] == PRESSED){
         cube2.transform.rotation.y += delta_time;
     }
@@ -119,23 +118,36 @@ int main(){
     window_set_resize_callback(resize_callback);
     window_set_input_callback(input_callback);
 
-    u32 shader = renderer_load_shader("shaders/test_vertex.glsl", "shaders/test_fragment.glsl");
+    Camera main_camera;
+    init_camera(&main_camera, (Vec3){0, 0, 0}, (Vec3){0, 0, 0}, 45, 0.1, 1000,
+                (Vec4){1, 1, 1, 1});
+
+    Shader shader;
+    init_shader(&shader, "shaders/test_vertex.glsl", "shaders/test_fragment.glsl");
 
     init_renderable(&cube2, cube_vertices, sizeof(cube_vertices)/sizeof(f32), shader);
     cube2.transform.position = (Vec3){0, 0, -3};
+    cube2.transform.rotation = (Quaternion){0, 0, 0, 1};
+    cube2.transform.scale = (Vec3){1, 1, 1};
 
     u64 last_time = get_time()-10000;
+
+    f32 x = 0;
+
     while(1){
         u64 current_time = get_time();
         f32 delta_time = ((f32)(current_time-last_time))/1000000;
         last_time = current_time;
-        // int current_fps = (int)(1000*1000/(delta_time == 0 ? 1 : delta_time));
-        // char fps[50];
-        // printf("%d fps\n", current_fps);
+
+        // cube2.transform.rotation = quat_quat_mul(euler_to_quat((Vec3){0, x, 0}), quat_id());
+        cube2.transform.rotation.y += delta_time/3;
+        cube2.transform.rotation = quat_normalize(cube2.transform.rotation);
+        x += delta_time;
 
         handle_input(delta_time);
         if(!window_event()) break;
-        renderer_update();
+        renderer_update(main_camera);
+        if(confine_cursor) window_set_cursor_to_center();
     }
 
     return 0;

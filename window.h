@@ -34,6 +34,7 @@ void window_set_title(const char* title);
 void window_set_resize_callback(void (*callback)());
 void window_set_input_callback(void (*callback)(uint, KeyState));
 void window_set_state(WindowState state);
+void window_set_cursor_to_center();
 
 #ifdef _WIN32
 

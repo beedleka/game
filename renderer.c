@@ -33,21 +33,22 @@ void renderer_update(Camera* camera){
                                 (f32)current_window_size.width/(f32)current_window_size.height,
                                 camera->near_plane, camera->far_plane);
 
+    Mat4 v = mat4_id();
+    v = mat4_mat4_mul(translate_3d_matrix(camera->position), v);
+
     for(int i = 0; i < living_renderables; i++){
         glUseProgram(renderables[i]->shader.shader_program);
         glBindVertexArray(renderables[i]->vertex_array_object);
 
         Mat4 m = mat4_id();
-        Mat4 v = mat4_id();
-
         m = mat4_mat4_mul(translate_3d_matrix(renderables[i]->transform.position), m);
         m = mat4_mat4_mul(rotate_3d_matrix(renderables[i]->transform.rotation), m);
         m = mat4_mat4_mul(scale_3d_matrix(renderables[i]->transform.scale), m);
 
         Mat4 mvp = mat4_id();
-        mvp = mat4_mat4_mul(m, mat4_mat4_mul(p, v));
+        mvp = mat4_mat4_mul(m, mat4_mat4_mul(v, p));
 
-        glUniformMatrix4fv(renderables[i]->shader.mvp_location, 1, GL_FALSE, mvp.v);
+        glUniformMatrix4fv(renderables[i]->shader.mvp_location, 1, GL_FALSE, mvp.m);
 
         if(renderables[i]->enable_face_culling){
             glEnable(GL_CULL_FACE);
@@ -96,7 +97,7 @@ void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_coun
     renderable->rasterization_mode = SOLID;
     renderable->transform.position = (Vec3){0, 0, 0};
     renderable->transform.scale = (Vec3){1, 1, 1};
-    renderable->transform.rotation = (Quaternion){0, 0, 0, 1};
+    renderable->transform.rotation = quat_id();
     renderable->enable_face_culling = 1;
 
     renderables[living_renderables] = renderable;
@@ -112,7 +113,7 @@ void init_shader(Shader* shader, const char* vertex_shader_filename, const char*
     }
 }
 
-void init_camera(Camera* camera, Vec3 position, Vec3 rotation, f32 field_of_view, f32 near_plane,
+void init_camera(Camera* camera, Vec3 position, Quaternion rotation, f32 field_of_view, f32 near_plane,
                 f32 far_plane,
                 Vec4 clear_color){
     camera->position = position;

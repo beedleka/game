@@ -17,81 +17,77 @@ Mat4 mat4_id(){
     };
 }
 
-Quaternion quat_id(){
-    return (Quaternion){0, 0, 0, 1};
-}
-
 Mat4 mat4_mat4_add(Mat4 a, Mat4 b){
     return (Mat4){
-        a.v[0]+b.v[0], a.v[1]+b.v[1], a.v[2]+b.v[2], a.v[3]+b.v[3],
-        a.v[4]+b.v[4], a.v[5]+b.v[5], a.v[6]+b.v[6], a.v[7]+b.v[7],
-        a.v[8]+b.v[8], a.v[9]+b.v[9], a.v[10]+b.v[10], a.v[11]+b.v[11],
-        a.v[12]+b.v[12], a.v[13]+b.v[13], a.v[14]+b.v[14], a.v[15]+b.v[15]
+        a.m[0]+b.m[0], a.m[1]+b.m[1], a.m[2]+b.m[2], a.m[3]+b.m[3],
+        a.m[4]+b.m[4], a.m[5]+b.m[5], a.m[6]+b.m[6], a.m[7]+b.m[7],
+        a.m[8]+b.m[8], a.m[9]+b.m[9], a.m[10]+b.m[10], a.m[11]+b.m[11],
+        a.m[12]+b.m[12], a.m[13]+b.m[13], a.m[14]+b.m[14], a.m[15]+b.m[15]
     };
 }
 
 Mat4 mat4_mat4_mul(Mat4 a, Mat4 b){
     return (Mat4){
-        a.v[0]*b.v[0]+a.v[1]*b.v[4]+a.v[2]*b.v[8]+a.v[3]*b.v[12],
-        a.v[0]*b.v[1]+a.v[1]*b.v[5]+a.v[2]*b.v[9]+a.v[3]*b.v[13],
-        a.v[0]*b.v[2]+a.v[1]*b.v[6]+a.v[2]*b.v[10]+a.v[3]*b.v[14],
-        a.v[0]*b.v[3]+a.v[1]*b.v[7]+a.v[2]*b.v[11]+a.v[3]*b.v[15],
+        a.m[0]*b.m[0]+a.m[1]*b.m[4]+a.m[2]*b.m[8]+a.m[3]*b.m[12],
+        a.m[0]*b.m[1]+a.m[1]*b.m[5]+a.m[2]*b.m[9]+a.m[3]*b.m[13],
+        a.m[0]*b.m[2]+a.m[1]*b.m[6]+a.m[2]*b.m[10]+a.m[3]*b.m[14],
+        a.m[0]*b.m[3]+a.m[1]*b.m[7]+a.m[2]*b.m[11]+a.m[3]*b.m[15],
 
-        a.v[4]*b.v[0]+a.v[5]*b.v[4]+a.v[6]*b.v[8]+a.v[7]*b.v[12],
-        a.v[4]*b.v[1]+a.v[5]*b.v[5]+a.v[6]*b.v[9]+a.v[7]*b.v[13],
-        a.v[4]*b.v[2]+a.v[5]*b.v[6]+a.v[6]*b.v[10]+a.v[7]*b.v[14],
-        a.v[4]*b.v[3]+a.v[5]*b.v[7]+a.v[6]*b.v[11]+a.v[7]*b.v[15],
+        a.m[4]*b.m[0]+a.m[5]*b.m[4]+a.m[6]*b.m[8]+a.m[7]*b.m[12],
+        a.m[4]*b.m[1]+a.m[5]*b.m[5]+a.m[6]*b.m[9]+a.m[7]*b.m[13],
+        a.m[4]*b.m[2]+a.m[5]*b.m[6]+a.m[6]*b.m[10]+a.m[7]*b.m[14],
+        a.m[4]*b.m[3]+a.m[5]*b.m[7]+a.m[6]*b.m[11]+a.m[7]*b.m[15],
 
-        a.v[8]*b.v[0]+a.v[9]*b.v[4]+a.v[10]*b.v[8]+a.v[11]*b.v[12],
-        a.v[8]*b.v[1]+a.v[9]*b.v[5]+a.v[10]*b.v[9]+a.v[11]*b.v[13],
-        a.v[8]*b.v[2]+a.v[9]*b.v[6]+a.v[10]*b.v[10]+a.v[11]*b.v[14],
-        a.v[8]*b.v[3]+a.v[9]*b.v[7]+a.v[10]*b.v[11]+a.v[11]*b.v[15],
+        a.m[8]*b.m[0]+a.m[9]*b.m[4]+a.m[10]*b.m[8]+a.m[11]*b.m[12],
+        a.m[8]*b.m[1]+a.m[9]*b.m[5]+a.m[10]*b.m[9]+a.m[11]*b.m[13],
+        a.m[8]*b.m[2]+a.m[9]*b.m[6]+a.m[10]*b.m[10]+a.m[11]*b.m[14],
+        a.m[8]*b.m[3]+a.m[9]*b.m[7]+a.m[10]*b.m[11]+a.m[11]*b.m[15],
 
-        a.v[12]*b.v[0]+a.v[13]*b.v[4]+a.v[14]*b.v[8]+a.v[15]*b.v[12],
-        a.v[12]*b.v[1]+a.v[13]*b.v[5]+a.v[14]*b.v[9]+a.v[15]*b.v[13],
-        a.v[12]*b.v[2]+a.v[13]*b.v[6]+a.v[14]*b.v[10]+a.v[15]*b.v[14],
-        a.v[12]*b.v[3]+a.v[13]*b.v[7]+a.v[14]*b.v[11]+a.v[15]*b.v[15]
+        a.m[12]*b.m[0]+a.m[13]*b.m[4]+a.m[14]*b.m[8]+a.m[15]*b.m[12],
+        a.m[12]*b.m[1]+a.m[13]*b.m[5]+a.m[14]*b.m[9]+a.m[15]*b.m[13],
+        a.m[12]*b.m[2]+a.m[13]*b.m[6]+a.m[14]*b.m[10]+a.m[15]*b.m[14],
+        a.m[12]*b.m[3]+a.m[13]*b.m[7]+a.m[14]*b.m[11]+a.m[15]*b.m[15]
     };
 }
 
 Mat3 mat3_mat3_add(Mat3 a, Mat3 b){
     return (Mat3){
-        a.v[0]+b.v[0], a.v[1]+b.v[1], a.v[2]+b.v[2],
-        a.v[3]+b.v[3], a.v[4]+b.v[4], a.v[5]+b.v[5],
-        a.v[6]+b.v[6], a.v[7]+b.v[7], a.v[8]+b.v[8]
+        a.m[0]+b.m[0], a.m[1]+b.m[1], a.m[2]+b.m[2],
+        a.m[3]+b.m[3], a.m[4]+b.m[4], a.m[5]+b.m[5],
+        a.m[6]+b.m[6], a.m[7]+b.m[7], a.m[8]+b.m[8]
     };
 }
 
 Mat3 mat3_mat3_mul(Mat3 a, Mat3 b){
     return (Mat3){
-        a.v[0]*b.v[0]+a.v[1]*b.v[3]+a.v[2]*b.v[6],
-        a.v[0]*b.v[1]+a.v[1]*b.v[4]+a.v[2]*b.v[7],
-        a.v[0]*b.v[2]+a.v[1]*b.v[5]+a.v[2]*b.v[8],
+        a.m[0]*b.m[0]+a.m[1]*b.m[3]+a.m[2]*b.m[6],
+        a.m[0]*b.m[1]+a.m[1]*b.m[4]+a.m[2]*b.m[7],
+        a.m[0]*b.m[2]+a.m[1]*b.m[5]+a.m[2]*b.m[8],
 
-        a.v[3]*b.v[0]+a.v[4]*b.v[3]+a.v[5]*b.v[6],
-        a.v[3]*b.v[1]+a.v[4]*b.v[4]+a.v[5]*b.v[7],
-        a.v[3]*b.v[2]+a.v[4]*b.v[5]+a.v[5]*b.v[8],
+        a.m[3]*b.m[0]+a.m[4]*b.m[3]+a.m[5]*b.m[6],
+        a.m[3]*b.m[1]+a.m[4]*b.m[4]+a.m[5]*b.m[7],
+        a.m[3]*b.m[2]+a.m[4]*b.m[5]+a.m[5]*b.m[8],
 
-        a.v[6]*b.v[0]+a.v[7]*b.v[3]+a.v[8]*b.v[6],
-        a.v[6]*b.v[1]+a.v[7]*b.v[4]+a.v[8]*b.v[7],
-        a.v[6]*b.v[2]+a.v[7]*b.v[5]+a.v[8]*b.v[8]
+        a.m[6]*b.m[0]+a.m[7]*b.m[3]+a.m[8]*b.m[6],
+        a.m[6]*b.m[1]+a.m[7]*b.m[4]+a.m[8]*b.m[7],
+        a.m[6]*b.m[2]+a.m[7]*b.m[5]+a.m[8]*b.m[8]
     };
 }
 
 Vec3 mat3_vec3_mul(Mat3 a, Vec3 b){
     return (Vec3){
-        b.v[0]*a.v[0]+b.v[1]*a.v[3]+b.v[2]*a.v[6],
-        b.v[0]*a.v[1]+b.v[1]*a.v[4]+b.v[2]*a.v[7],
-        b.v[0]*a.v[2]+b.v[1]*a.v[5]+b.v[2]*a.v[8]
+        b.v[0]*a.m[0]+b.v[1]*a.m[3]+b.v[2]*a.m[6],
+        b.v[0]*a.m[1]+b.v[1]*a.m[4]+b.v[2]*a.m[7],
+        b.v[0]*a.m[2]+b.v[1]*a.m[5]+b.v[2]*a.m[8]
     };
 }
 
 Vec4 mat4_vec4_mul(Mat4 a, Vec4 b){
     return (Vec4){
-        b.v[0]*a.v[0]+b.v[1]*a.v[4]+b.v[2]*a.v[8]+b.v[3]*a.v[12],
-        b.v[0]*a.v[1]+b.v[1]*a.v[5]+b.v[2]*a.v[9]+b.v[3]*a.v[13],
-        b.v[0]*a.v[2]+b.v[1]*a.v[6]+b.v[2]*a.v[10]+b.v[3]*a.v[14],
-        b.v[0]*a.v[3]+b.v[1]*a.v[7]+b.v[2]*a.v[11]+b.v[3]*a.v[15]
+        b.v[0]*a.m[0]+b.v[1]*a.m[4]+b.v[2]*a.m[8]+b.v[3]*a.m[12],
+        b.v[0]*a.m[1]+b.v[1]*a.m[5]+b.v[2]*a.m[9]+b.v[3]*a.m[13],
+        b.v[0]*a.m[2]+b.v[1]*a.m[6]+b.v[2]*a.m[10]+b.v[3]*a.m[14],
+        b.v[0]*a.m[3]+b.v[1]*a.m[7]+b.v[2]*a.m[11]+b.v[3]*a.m[15]
     };
 }
 
@@ -135,30 +131,6 @@ Mat4 rotate_3d_matrix(Quaternion q){
     };
 }
 
-Quaternion euler_to_quat(Vec3 e){
-    f32 cx = cos(e.x/2);
-    f32 sx = sin(e.x/2);
-    f32 cy = cos(e.y/2);
-    f32 sy = sin(e.y/2);
-    f32 cz = cos(e.z/2);
-    f32 sz = sin(e.z/2);
-    return (Quaternion){
-        cx*cy*cz+sx*sy*sz,
-        sx*cy*cz-cx*sy*sz,
-        cx*sy*cz+sx*cy*sz,
-        cx*cy*sz-sx*sy*cz
-    };
-}
-
-Quaternion quat_quat_mul(Quaternion a, Quaternion b){
-    return (Quaternion){
-        a.w*b.x+a.x*b.w+a.y*b.z-a.z*b.y,
-        a.w*b.y-a.x*b.z+a.y*b.w+a.z*b.x,
-        a.w*b.z+a.x*b.y-a.y*b.x+a.z*b.w,
-        a.w*b.w-a.x*b.x-a.y*b.y-a.z*b.z
-    };
-}
-
 f32 rad(f32 deg){
     return deg*PI/180;
 }
@@ -177,10 +149,6 @@ f32 vec3_magnitude(Vec3 v){
 
 f32 vec4_magnitude(Vec4 v){
     return sqrt(v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w);
-}
-
-f32 quat_magnitude(Quaternion q){
-    return sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
 }
 
 f32 vec3_dot_product(Vec3 a, Vec3 b){
@@ -206,6 +174,38 @@ Vec4 vec4_normalize(Vec4 v){
     };
 }
 
+Quaternion euler_to_quat(Vec3 e){
+    f32 cx = cos(e.x/2);
+    f32 sx = sin(e.x/2);
+    f32 cy = cos(e.y/2);
+    f32 sy = sin(e.y/2);
+    f32 cz = cos(e.z/2);
+    f32 sz = sin(e.z/2);
+    return (Quaternion){
+        sx*cy*cz-cx*sy*sz,
+        cx*sy*cz+sx*cy*sz,
+        cx*cy*sz-sx*sy*cz,
+        cx*cy*cz+sx*sy*sz
+    };
+}
+
+Quaternion quat_quat_mul(Quaternion a, Quaternion b){
+    return (Quaternion){
+        a.w*b.x+a.x*b.w+a.y*b.z-a.z*b.y,
+        a.w*b.y-a.x*b.z+a.y*b.w+a.z*b.x,
+        a.w*b.z+a.x*b.y-a.y*b.x+a.z*b.w,
+        a.w*b.w-a.x*b.x-a.y*b.y-a.z*b.z
+    };
+}
+
+Quaternion quat_id(){
+    return (Quaternion){0, 0, 0, 1};
+}
+
+f32 quat_magnitude(Quaternion q){
+    return sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
+}
+
 Quaternion quat_normalize(Quaternion q){
     f32 m = quat_magnitude(q);
     return (Quaternion){
@@ -214,4 +214,61 @@ Quaternion quat_normalize(Quaternion q){
         q.z/m,
         q.w/m
     };
+}
+
+Quaternion quat_conjugate(Quaternion q){
+    return (Quaternion){-q.x, -q.y, -q.z, q.w};
+}
+
+Quaternion quat_inverse(Quaternion q){
+    f32 m = quat_magnitude(q);
+    if(m == 0) return (Quaternion){0, 0, 0, 0};
+    m *= m;
+    return (Quaternion){-q.x/m, -q.y/m, -q.z/m, q.w/m};
+}
+
+Quaternion quat_difference(Quaternion a, Quaternion b){
+    return quat_quat_mul(quat_inverse(a), b);
+}
+
+Quaternion quat_exp(Quaternion q){
+    Vec3 v = (Vec3){q.x, q.y, q.z};
+    f32 v_m = vec3_magnitude(v);
+    Vec3 v_n = vec3_normalize(v);
+    f32 sin_v = sin(v_m);
+    f32 exp_w = exp(q.w);
+    return (Quaternion){
+        v_n.x*sin_v*exp_w,
+        v_n.y*sin_v*exp_w,
+        v_n.z*sin_v*exp_w,
+        cos(v_m)*exp_w
+    };
+}
+
+Quaternion quat_log(Quaternion q){
+    Vec3 v = (Vec3){q.x, q.y, q.z};
+    f32 v_m = vec3_magnitude(v);
+    Vec3 v_n = vec3_normalize(v);
+    f32 m = quat_magnitude(q);
+    f32 a = acos(q.w/m);
+    return (Quaternion){
+        v_n.x*a,
+        v_n.y*a,
+        v_n.z*a,
+        log(m)
+    };
+}
+
+Quaternion quat_scale(Quaternion q, f32 s){
+    return (Quaternion){q.x*s, q.y*s, q.z*s, q.w*s};
+}
+
+Quaternion quat_pow(Quaternion q, f32 n){
+    return quat_exp(quat_scale(quat_log(q), n));
+}
+
+Quaternion quat_slerp(Quaternion q1, Quaternion q2, f32 t){
+    t = t < 0 ? 0 : t;
+    t = t > 1 ? 1 : t;
+    return quat_quat_mul(q1, quat_pow(quat_quat_mul(quat_inverse(q1), q2), t));
 }

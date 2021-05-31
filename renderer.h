@@ -10,7 +10,7 @@ typedef struct Transform{
 
 typedef struct Camera{
     Vec3 position;
-    Vec3 rotation;
+    Quaternion rotation;
     f32 field_of_view;
     f32 near_plane;
     f32 far_plane;
@@ -49,7 +49,7 @@ void renderer_swap_buffers();
 void init_shader(Shader* shader, const char* vertex_shader_filename, const char* fragment_shader_filename);
 void renderer_update();
 void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_count, Shader shader);
-void init_camera(Camera* camera, Vec3 position, Vec3 rotation, f32 field_of_view, f32 near_plane,
+void init_camera(Camera* camera, Vec3 position, Quaternion rotation, f32 field_of_view, f32 near_plane,
                 f32 far_plane,
                 Vec4 clear_color);
 void renderer_close();

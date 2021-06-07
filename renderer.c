@@ -27,14 +27,21 @@ void renderer_swap_buffers(){
 void renderer_update(Camera* camera){
     renderer_clear(camera->clear_color);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     Mat4 p = mat4_id();
     p = perspective_projection_matrix(rad(camera->field_of_view),
                                 (f32)current_window_size.width/(f32)current_window_size.height,
                                 camera->near_plane, camera->far_plane);
 
-    Mat4 v = mat4_id();
-    v = mat4_mat4_mul(translate_3d_matrix(camera->position), v);
+    Vec3 forward;
+    float x = camera->rotation.x;
+    float y = camera->rotation.y;
+    forward.x = cos(x)*cos(y);
+    forward.y = sin(y);
+    forward.z = sin(x)*cos(y);
+    Mat4 v = lookat_matrix(camera->position, vec3_add(camera->position, forward), (Vec3){0, 1, 0});
 
     for(int i = 0; i < living_renderables; i++){
         glUseProgram(renderables[i]->shader.shader_program);
@@ -66,32 +73,46 @@ void renderer_update(Camera* camera){
                 break;
         }
 
-        glDrawArrays(GL_TRIANGLES, 0, renderables[i]->vertex_count);
+        glDrawElements(GL_TRIANGLES, renderables[i]->mesh->face_count*3, GL_UNSIGNED_INT, 0);
     }
 
     renderer_swap_buffers();
 }
 
-void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_count, Shader shader){
+void init_renderable(Renderable* renderable, fastObjMesh* mesh, Shader shader){
     if(living_renderables == MAX_RENDERABLES){
         error("Maximum renderables reached");
         return;
     }
 
-    u32 vbo, vao;
+    u32 vbo, vao, ebo;
     glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
     glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+
+    glBindVertexArray(vao);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertex_count*sizeof(f32), vertex_buffer, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4*sizeof(f32), (void*)0);
+
+    glBufferData(GL_ARRAY_BUFFER, mesh->position_count*sizeof(f32)*3, mesh->positions, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(f32), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4*sizeof(f32), (void*)(3*sizeof(f32)));
-    glEnableVertexAttribArray(1);
+
+    int indices_size = mesh->face_count*3*sizeof(unsigned int);
+    unsigned int* indices = malloc(indices_size);
+    for(unsigned int i = 0; i < mesh->face_count; i++){
+        indices[(i*3)] = mesh->indices[(i*3)].p;
+        indices[(i*3)+1] = mesh->indices[(i*3)+1].p;
+        indices[(i*3)+2] = mesh->indices[(i*3)+2].p;
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_size, indices, GL_STATIC_DRAW);
+    free(indices);
+
     glBindVertexArray(0);
 
-    renderable->vertex_count = vertex_count;
-    renderable->vertex_buffer = vertex_buffer;
+    renderable->mesh = mesh;
     renderable->vertex_array_object = vao;
     renderable->shader = shader;
     renderable->rasterization_mode = SOLID;
@@ -104,7 +125,7 @@ void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_coun
     living_renderables++;
 }
 
-void init_shader(Shader* shader, const char* vertex_shader_filename, const char* fragment_shader_filename){
+void init_shader(Shader* shader, char* vertex_shader_filename, char* fragment_shader_filename){
     u32 shader_program = opengl_load_shader(vertex_shader_filename, fragment_shader_filename);
     if(shader_program != 0){
         shader->shader_program = shader_program;
@@ -113,11 +134,11 @@ void init_shader(Shader* shader, const char* vertex_shader_filename, const char*
     }
 }
 
-void init_camera(Camera* camera, Vec3 position, Quaternion rotation, f32 field_of_view, f32 near_plane,
+void init_camera(Camera* camera, Vec3 position, f32 field_of_view, f32 near_plane,
                 f32 far_plane,
                 Vec4 clear_color){
     camera->position = position;
-    camera->rotation = rotation;
+    camera->rotation = (Vec3){PI/2, 0, 0};
     camera->field_of_view = field_of_view;
     camera->near_plane = near_plane;
     camera->far_plane = far_plane;

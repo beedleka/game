@@ -1,6 +1,7 @@
 #include "types.h"
 #include "math.h"
 #include "opengl.h"
+#include "fast_obj.h" // @Note replace this with mesh.h
 
 typedef struct Transform{
     Vec3 position;
@@ -10,7 +11,7 @@ typedef struct Transform{
 
 typedef struct Camera{
     Vec3 position;
-    Quaternion rotation;
+    Vec3 rotation;
     f32 field_of_view;
     f32 near_plane;
     f32 far_plane;
@@ -29,8 +30,7 @@ typedef struct Shader{
 
 typedef struct Renderable{
     Transform transform;
-    f32* vertex_buffer;
-    u32 vertex_count;
+    fastObjMesh* mesh;
     Shader shader;
     u32 vertex_array_object;
     RasterizationMode rasterization_mode;
@@ -46,10 +46,10 @@ void renderer_set_viewport(int x, int y, int width, int height);
 void renderer_set_swap_interval(int interval);
 void renderer_clear(Vec4 clear_color);
 void renderer_swap_buffers();
-void init_shader(Shader* shader, const char* vertex_shader_filename, const char* fragment_shader_filename);
+void init_shader(Shader* shader, char* vertex_shader_filename, char* fragment_shader_filename);
 void renderer_update();
-void init_renderable(Renderable* renderable, f32* vertex_buffer, u32 vertex_count, Shader shader);
-void init_camera(Camera* camera, Vec3 position, Quaternion rotation, f32 field_of_view, f32 near_plane,
+void init_renderable(Renderable* renderable, fastObjMesh* mesh, Shader shader);
+void init_camera(Camera* camera, Vec3 position, f32 field_of_view, f32 near_plane,
                 f32 far_plane,
                 Vec4 clear_color);
 void renderer_close();

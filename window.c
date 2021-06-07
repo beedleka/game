@@ -6,15 +6,21 @@ WindowSize original_window_size;
 
 KeyState keyboard[MAX_KEYCODES] = {RELEASED};
 
-static void (*resize_callback)() = NULL;
-static void (*input_callback)(uint, KeyState) = NULL;
+void empty_callback(){};
+static void (*resize_callback)() = (void(*)())empty_callback;
+static void (*keyboard_callback)(uint, KeyState) = (void(*)(uint, KeyState))empty_callback;
+static void (*mouse_callback)(MousePos) = (void(*)(MousePos))empty_callback;
 
 void window_set_resize_callback(void (*callback)()){
     resize_callback = callback;
 }
 
-void window_set_input_callback(void (*callback)(uint, KeyState)){
-    input_callback = callback;
+void window_set_keyboard_callback(void (*callback)(uint, KeyState)){
+    keyboard_callback = callback;
+}
+
+void window_set_mouse_callback(void (*callback)(MousePos)){
+    mouse_callback = callback;
 }
 
 #ifdef _WIN32
@@ -49,12 +55,26 @@ static LRESULT CALLBACK window_procedure(HWND window_handle, UINT message, WPARA
             }
             break;
         case WM_KEYDOWN:
-            input_callback(w_param, PRESSED);
+            keyboard_callback(w_param, PRESSED);
             keyboard[w_param] = PRESSED;
             break;
         case WM_KEYUP:
-            input_callback(w_param, RELEASED);
+            keyboard_callback(w_param, RELEASED);
             keyboard[w_param] = RELEASED;
+            break;
+        case WM_INPUT:
+            {
+                UINT size = sizeof(RAWINPUT);
+                RAWINPUT raw_input[sizeof(RAWINPUT)];
+                GetRawInputData((HRAWINPUT)l_param, RID_INPUT, raw_input, &size, sizeof(RAWINPUTHEADER));
+                if(raw_input->header.dwType == RIM_TYPEMOUSE){
+                    mouse_callback((MousePos){raw_input->data.mouse.lLastX, raw_input->data.mouse.lLastY});
+                }
+
+                RECT rect;
+                GetWindowRect(window_handle, &rect);
+                SetCursorPos((rect.right+rect.left)/2, (rect.top+rect.bottom)/2);
+            }
             break;
         case WM_CLOSE:
             window_close();
@@ -127,17 +147,31 @@ int window_create(char* title, int width, int height){
 
     ShowCursor(FALSE);
 
+    RAWINPUTDEVICE raw_input_device[1];
+    raw_input_device[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+    raw_input_device[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+    raw_input_device[0].dwFlags = RIDEV_INPUTSINK;
+    raw_input_device[0].hwndTarget = window_handle;
+    if(!RegisterRawInputDevices(raw_input_device, 1, sizeof(raw_input_device[0]))){
+        win32_print_last_error("RegisterRawInputDevices:");
+        return 1;
+    }
+
     return 0;
 }
 
 int window_event(){
     MSG message;
-    PeekMessage(&message, NULL, 0, 0, PM_REMOVE);
-    if(message.message != WM_QUIT){
-        TranslateMessage(&message);
-        DispatchMessage(&message);
+    while(PeekMessage(&message, NULL, 0, 0, PM_REMOVE)){
+        if(message.message != WM_QUIT){
+            TranslateMessage(&message);
+            DispatchMessage(&message);
+        }
+        else{
+            return 0;
+        }
     }
-    return message.message != WM_QUIT;
+    return 1;
 }
 
 void window_set_title(const char* title){
@@ -174,13 +208,6 @@ void window_set_state(WindowState state){
                     original_window_size.width,
                     original_window_size.height, TRUE);
     }
-}
-
-void window_set_cursor_to_center(){
-    if(window_handle == NULL) return;
-    RECT rect;
-    GetWindowRect(window_handle, &rect);
-    SetCursorPos((rect.right+rect.left)/2, (rect.top+rect.bottom)/2);
 }
 
 #elif __linux__

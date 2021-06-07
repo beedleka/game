@@ -21,6 +21,11 @@ typedef enum{
     PRESSED
 } KeyState;
 
+typedef struct MousePos{
+    int x;
+    int y;
+} MousePos;
+
 #define MAX_KEYCODES 255 // @Note maybe this should be different for each system?
 extern KeyState keyboard[MAX_KEYCODES];
 
@@ -32,13 +37,21 @@ int window_create(char* title, int width, int height);
 int window_event();
 void window_set_title(const char* title);
 void window_set_resize_callback(void (*callback)());
-void window_set_input_callback(void (*callback)(uint, KeyState));
+void window_set_keyboard_callback(void (*callback)(uint, KeyState));
+void window_set_mouse_callback(void (*callback)(MousePos));
 void window_set_state(WindowState state);
-void window_set_cursor_to_center();
 
 #ifdef _WIN32
 
 #include <windows.h>
+#include <windowsx.h>
+
+#ifndef HID_USAGE_PAGE_GENERIC
+#define HID_USAGE_PAGE_GENERIC ((unsigned short) 0x01)
+#endif
+#ifndef HID_USAGE_GENERIC_MOUSE
+#define HID_USAGE_GENERIC_MOUSE ((unsigned short) 0x02)
+#endif
 
 extern HDC device_context;
 

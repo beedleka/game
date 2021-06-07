@@ -21,17 +21,18 @@ glUseProgram_TYPE glUseProgram;
 glGenVertexArrays_TYPE glGenVertexArrays;
 glBindVertexArray_TYPE glBindVertexArray;
 glUniformMatrix4fv_TYPE glUniformMatrix4fv;
+glUniform1i_TYPE glUniform1i;
 glGetUniformLocation_TYPE glGetUniformLocation;
 glGetStringi_TYPE glGetStringi;
 
 void* get_proc_address(const char* name){
-    #ifdef _WIN32
-        return wglGetProcAddress(name);
-    #elif __linux__
-    #ifdef X11
-        return glXGetProcAddress((const GLubyte *)name);
-    #endif
-    #endif
+#ifdef _WIN32
+    return wglGetProcAddress(name);
+#elif __linux__
+#ifdef X11
+    return glXGetProcAddress((const GLubyte *)name);
+#endif
+#endif
 }
 
 static int load_opengl_functions(){
@@ -77,6 +78,8 @@ static int load_opengl_functions(){
     if(glBindVertexArray == NULL) return 1;
     glUniformMatrix4fv = (glUniformMatrix4fv_TYPE)get_proc_address("glUniformMatrix4fv");
     if(glUniformMatrix4fv == NULL) return 1;
+    glUniform1i = (glUniform1i_TYPE)get_proc_address("glUniform1i");
+    if(glUniform1i == NULL) return 1;
     glGetUniformLocation = (glGetUniformLocation_TYPE)get_proc_address("glGetUniformLocation");
     if(glGetUniformLocation == NULL) return 1;
     glGetStringi = (glGetStringi_TYPE)get_proc_address("glGetStringi");
@@ -525,17 +528,17 @@ void opengl_clear(Vec4 clear_color){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-u32 opengl_load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename){
-    FILE* vertex_shader_file = fopen(vertex_shader_filename, "rb");
-    FILE* fragment_shader_file = fopen(fragment_shader_filename, "rb");
+u32 opengl_load_shader(char* vertex_shader_filepath, char* fragment_shader_filepath){
+    FILE* vertex_shader_file = fopen(vertex_shader_filepath, "rb");
+    FILE* fragment_shader_file = fopen(fragment_shader_filepath, "rb");
 
     if(vertex_shader_file == NULL){
-        error("opengl_load_shader: no such file or directory \"%s\"", vertex_shader_filename);
+        error("opengl_load_shader: no such file or directory \"%s\"", vertex_shader_filepath);
         return 0;
     }
 
     if(fragment_shader_file == NULL){
-        error("opengl_load_shader: no such file or directory \"%s\"", fragment_shader_filename);
+        error("opengl_load_shader: no such file or directory \"%s\"", fragment_shader_filepath);
         return 0;
     }
 

@@ -14,7 +14,7 @@ typedef struct GLExtensions{
 
 int opengl_init(int opengl_major_version, int opengl_minor_version);
 void opengl_swap_buffers();
-u32 opengl_load_shader(const char* vertex_shader_filename, const char* fragment_shader_filename);
+u32 opengl_load_shader(char* vertex_shader_filepath, char* fragment_shader_filepath);
 void opengl_set_swap_interval(int interval);
 void opengl_set_viewport(int x, int y, int width, int height);
 void opengl_clear(Vec4 clear_color);
@@ -51,6 +51,19 @@ void opengl_clear(Vec4 clear_color);
 #define GL_DEPTH_BUFFER_BIT 0x00000100
 #define GL_STENCIL_BUFFER_BIT 0x00000400
 #define GL_COLOR_BUFFER_BIT 0x00004000
+#define GL_ELEMENT_ARRAY_BUFFER 0x8893
+#define GL_SRC_COLOR 0x0300
+#define GL_ONE_MINUS_SRC_COLOR 0x0301
+#define GL_SRC_ALPHA 0x0302
+#define GL_ONE_MINUS_SRC_ALPHA 0x0303
+#define GL_DST_ALPHA 0x0304
+#define GL_ONE_MINUS_DST_ALPHA 0x0305
+#define GL_DST_COLOR 0x0306
+#define GL_ONE_MINUS_DST_COLOR 0x0307
+#define GL_SRC_ALPHA_SATURATE 0x0308
+#define GL_BLEND_DST 0x0BE0
+#define GL_BLEND_SRC 0x0BE1
+#define GL_BLEND 0x0BE2
 
 #if defined(_WIN32) && !defined(APIENTRY)
 #define APIENTRY __stdcall
@@ -142,6 +155,7 @@ typedef void (APIENTRY* glUseProgram_TYPE)(GLuint);
 typedef void (APIENTRY* glGenVertexArrays_TYPE)(GLsizei, GLuint*);
 typedef void (APIENTRY* glBindVertexArray_TYPE)(GLuint);
 typedef void (APIENTRY* glUniformMatrix4fv_TYPE)(GLint, GLsizei, GLboolean, const GLfloat*);
+typedef void (APIENTRY* glUniform1i_TYPE)(GLint, GLint);
 typedef GLint (APIENTRY* glGetUniformLocation_TYPE)(GLuint, const GLchar*);
 typedef const GLubyte* (APIENTRY* glGetStringi_TYPE)(GLenum, GLuint);
 
@@ -166,5 +180,6 @@ extern glUseProgram_TYPE glUseProgram;
 extern glGenVertexArrays_TYPE glGenVertexArrays;
 extern glBindVertexArray_TYPE glBindVertexArray;
 extern glUniformMatrix4fv_TYPE glUniformMatrix4fv;
+extern glUniform1i_TYPE glUniform1i;
 extern glGetUniformLocation_TYPE glGetUniformLocation;
 extern glGetStringi_TYPE glGetStringi;

@@ -131,11 +131,26 @@ Mat4 rotate_3d_matrix(Quaternion q){
     };
 }
 
+Mat4 lookat_matrix(Vec3 camera_pos, Vec3 target_pos, Vec3 world_up){
+    Vec3 camera_direction = vec3_normalize(vec3_sub(target_pos, camera_pos));
+    Vec3 camera_right = vec3_normalize(vec3_cross(world_up, camera_direction));
+    Vec3 camera_up = vec3_cross(camera_direction, camera_right);
+    camera_direction = vec3_scale(camera_direction, -1);
+    return (Mat4){
+        camera_right.x, camera_up.x, camera_direction.x, 0,
+        camera_right.y, camera_up.y, camera_direction.y, 0,
+        camera_right.z, camera_up.z, camera_direction.z, 0,
+        -vec3_dot(camera_right, camera_pos),
+        -vec3_dot(camera_up, camera_pos),
+        -vec3_dot(camera_direction, camera_pos), 1
+    };
+}
+
 f32 rad(f32 deg){
     return deg*PI/180;
 }
 
-Vec3 vec3_cross_product(Vec3 a, Vec3 b){
+Vec3 vec3_cross(Vec3 a, Vec3 b){
     return (Vec3){
         a.y*b.z-a.z*b.y,
         a.z*b.x-a.x*b.z,
@@ -151,17 +166,48 @@ f32 vec4_magnitude(Vec4 v){
     return sqrt(v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w);
 }
 
-f32 vec3_dot_product(Vec3 a, Vec3 b){
+f32 vec3_dot(Vec3 a, Vec3 b){
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
 Vec3 vec3_normalize(Vec3 v){
     f32 m = vec3_magnitude(v);
+    if(m == 0) return (Vec3){0, 0, 0};
     return (Vec3){
         v.x/m,
         v.y/m,
         v.z/m
     };
+}
+
+Vec3 vec3_add(Vec3 a, Vec3 b){
+    return (Vec3){
+        a.x+b.x,
+        a.y+b.y,
+        a.z+b.z,
+    };
+}
+
+Vec3 vec3_sub(Vec3 a, Vec3 b){
+    return (Vec3){
+        a.x-b.x,
+        a.y-b.y,
+        a.z-b.z,
+    };
+}
+
+Vec3 vec3_scale(Vec3 v, f32 s){
+    return (Vec3){
+        v.x*s,
+        v.y*s,
+        v.z*s,
+    };
+}
+
+Vec3 vec3_lerp(Vec3 a, Vec3 b, f32 t){
+    t = t < 0 ? 0 : t;
+    t = t > 1 ? 1 : t;
+    return vec3_add(vec3_scale(a, t), vec3_scale(b, 1-t));
 }
 
 Vec4 vec4_normalize(Vec4 v){
@@ -189,7 +235,7 @@ Quaternion euler_to_quat(Vec3 e){
     };
 }
 
-Quaternion quat_quat_mul(Quaternion a, Quaternion b){
+Quaternion quat_mul(Quaternion a, Quaternion b){
     return (Quaternion){
         a.w*b.x+a.x*b.w+a.y*b.z-a.z*b.y,
         a.w*b.y-a.x*b.z+a.y*b.w+a.z*b.x,
@@ -228,7 +274,7 @@ Quaternion quat_inverse(Quaternion q){
 }
 
 Quaternion quat_difference(Quaternion a, Quaternion b){
-    return quat_quat_mul(quat_inverse(a), b);
+    return quat_mul(quat_inverse(a), b);
 }
 
 Quaternion quat_exp(Quaternion q){
@@ -247,7 +293,6 @@ Quaternion quat_exp(Quaternion q){
 
 Quaternion quat_log(Quaternion q){
     Vec3 v = (Vec3){q.x, q.y, q.z};
-    f32 v_m = vec3_magnitude(v);
     Vec3 v_n = vec3_normalize(v);
     f32 m = quat_magnitude(q);
     f32 a = acos(q.w/m);
@@ -270,5 +315,9 @@ Quaternion quat_pow(Quaternion q, f32 n){
 Quaternion quat_slerp(Quaternion q1, Quaternion q2, f32 t){
     t = t < 0 ? 0 : t;
     t = t > 1 ? 1 : t;
-    return quat_quat_mul(q1, quat_pow(quat_quat_mul(quat_inverse(q1), q2), t));
+    return quat_mul(q1, quat_pow(quat_mul(quat_inverse(q1), q2), t));
+}
+
+f32 quat_dot_product(Quaternion q1, Quaternion q2){
+    return q1.x*q2.x+q1.y*q2.y+q1.z*q2.z+q1.w*q2.w;
 }

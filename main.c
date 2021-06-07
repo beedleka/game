@@ -4,6 +4,8 @@
 #include "utils.h"
 #include "math.h"
 #include "renderer.h"
+#include "mesh.h"
+#include "fast_obj.h" // @Note replace this with mesh.h
 
 #include <stdio.h>
 #include <assert.h>
@@ -12,9 +14,7 @@ void resize_callback(){
     renderer_set_viewport(0, 0, current_window_size.width, current_window_size.height);
 }
 
-int confine_cursor = 0;
-
-void input_callback(uint keycode, KeyState key_state){
+void keyboard_callback(uint keycode, KeyState key_state){
     if(keycode == KEY_ESCAPE && key_state == PRESSED){
         window_close();
     }
@@ -34,75 +34,52 @@ void input_callback(uint keycode, KeyState key_state){
     }
 }
 
-Camera main_camera;
-
-void handle_input(f32 delta_time){
-    f32 speed = 1;
-    if(keyboard[KEY_D] == PRESSED){
-        main_camera.position.x -= speed*delta_time;
+float mouse_sensivity = 0.002;
+void mouse_callback(MousePos mouse_pos){
+    main_camera.rotation.x -= mouse_pos.x*mouse_sensivity;
+    main_camera.rotation.y -= mouse_pos.y*mouse_sensivity;
+    if(main_camera.rotation.y > rad(89.0)) {
+        main_camera.rotation.y = rad(89.0);
     }
-    if(keyboard[KEY_A] == PRESSED){
-        main_camera.position.x += speed*delta_time;
-    }
-
-    if(keyboard[KEY_W] == PRESSED){
-        main_camera.position.z += speed*delta_time;
-    }
-    if(keyboard[KEY_S] == PRESSED){
-        main_camera.position.z -= speed*delta_time;
-    }
-
-    if(keyboard[KEY_Q] == PRESSED){
-        main_camera.position.y += speed*delta_time;
-    }
-    if(keyboard[KEY_E] == PRESSED){
-        main_camera.position.y -= speed*delta_time;
+    if (main_camera.rotation.y < -rad(89.0)) {
+        main_camera.rotation.y = -rad(89.0);
     }
 }
 
-f32 cube_vertices[] = {
--0.5f, -0.5f, -0.5f, 0.0f,
- 0.5f,  0.5f, -0.5f, 0.0f,
- 0.5f, -0.5f, -0.5f, 0.0f,
- 0.5f,  0.5f, -0.5f, 0.0f,
--0.5f, -0.5f, -0.5f, 0.0f,
--0.5f,  0.5f, -0.5f, 0.0f,
+Camera main_camera;
 
--0.5f, -0.5f,  0.5f, 1.0f,
- 0.5f, -0.5f,  0.5f, 1.0f,
- 0.5f,  0.5f,  0.5f, 1.0f,
- 0.5f,  0.5f,  0.5f, 1.0f,
--0.5f,  0.5f,  0.5f, 1.0f,
--0.5f, -0.5f,  0.5f, 1.0f,
+void print_vec3(Vec3 v){
+    printf("%f %f %f\n", v.x, v.y, v.z);
+}
 
--0.5f,  0.5f,  0.5f, 2.0f,
--0.5f,  0.5f, -0.5f, 2.0f,
--0.5f, -0.5f, -0.5f, 2.0f,
--0.5f, -0.5f, -0.5f, 2.0f,
--0.5f, -0.5f,  0.5f, 2.0f,
--0.5f,  0.5f,  0.5f, 2.0f,
+void handle_input(f32 delta_time){
+    f32 speed = 4;
+    Vec3 forward;
+    float x = main_camera.rotation.x;
+    float y = main_camera.rotation.y;
+    forward.x = cos(x)*cos(y);
+    forward.y = 0;
+    forward.z = sin(x)*cos(y);
+    forward = vec3_normalize(forward);
+    Vec3 right = vec3_normalize(vec3_cross(forward, (Vec3){0.0, 1.0, 0.0}));
+    float x_move = 0;
+    float z_move = 0;
+    if(keyboard[KEY_D] == PRESSED){
+        x_move -= 1;
+    }
+    if(keyboard[KEY_A] == PRESSED){
+        x_move += 1;
+    }
+    if(keyboard[KEY_W] == PRESSED){
+        z_move += 1;
+    }
+    if(keyboard[KEY_S] == PRESSED){
+        z_move -= 1;
+    }
 
- 0.5f,  0.5f,  0.5f, 3.0f,
- 0.5f, -0.5f, -0.5f, 3.0f,
- 0.5f,  0.5f, -0.5f, 3.0f,
- 0.5f, -0.5f, -0.5f, 3.0f,
- 0.5f,  0.5f,  0.5f, 3.0f,
- 0.5f, -0.5f,  0.5f, 3.0f,
-
--0.5f, -0.5f, -0.5f, 4.0f,
- 0.5f, -0.5f, -0.5f, 4.0f,
- 0.5f, -0.5f,  0.5f, 4.0f,
- 0.5f, -0.5f,  0.5f, 4.0f,
--0.5f, -0.5f,  0.5f, 4.0f,
--0.5f, -0.5f, -0.5f, 4.0f,
-
--0.5f,  0.5f, -0.5f, 5.0f,
- 0.5f,  0.5f,  0.5f, 5.0f,
- 0.5f,  0.5f, -0.5f, 5.0f,
- 0.5f,  0.5f,  0.5f, 5.0f,
--0.5f,  0.5f, -0.5f, 5.0f,
--0.5f,  0.5f,  0.5f, 5.0f,
-};
+    main_camera.position = vec3_add(main_camera.position, vec3_scale(vec3_normalize(vec3_add(
+        vec3_scale(forward, z_move), vec3_scale(right, x_move))), speed*delta_time));
+}
 
 int main(){
     int err = window_create("game", 800, 600);
@@ -117,19 +94,34 @@ int main(){
     renderer_set_swap_interval(1);
 
     window_set_resize_callback(resize_callback);
-    window_set_input_callback(input_callback);
+    window_set_keyboard_callback(keyboard_callback);
+    window_set_mouse_callback(mouse_callback);
 
-    init_camera(&main_camera, (Vec3){0, -1, -5}, quat_id(), 45, 0.1, 10000,
+    init_camera(&main_camera, (Vec3){0, 1, -5}, 90, 0.1, 10000,
                 (Vec4){1, 1, 1, 1});
 
-    Shader shader;
-    init_shader(&shader, "shaders/test_vertex.glsl", "shaders/test_fragment.glsl");
+    Shader plain_shader;
+    init_shader(&plain_shader, "shaders/plain_vertex.glsl", "shaders/plain_fragment.glsl");
 
-    Renderable cube;
-    init_renderable(&cube, cube_vertices, sizeof(cube_vertices)/sizeof(f32), shader);
-    cube.transform.position = (Vec3){0, 0, 0};
-    cube.transform.scale = (Vec3){1, 1, 1};
-    cube.transform.rotation = quat_id();
+    fastObjMesh* sphere_mesh = fast_obj_read("models/sphere.obj");
+    if(sphere_mesh == NULL){
+        error("fast_obj_read: can't load model file `models/sphere.obj`");
+        return 0;
+    }
+    fastObjMesh* plane_mesh = fast_obj_read("models/plane.obj");
+    if(plane_mesh == NULL){
+        error("fast_obj_read: can't load model file `models/plane.obj`");
+        return 0;
+    }
+
+    Renderable sphere;
+    init_renderable(&sphere, sphere_mesh, plain_shader);
+    sphere.transform.position = (Vec3){0, 1, 0};
+    Renderable ground;
+    init_renderable(&ground, plane_mesh, plain_shader);
+    ground.transform.scale = (Vec3){50, 1, 50};
+    ground.enable_face_culling = 0;
+    ground.rasterization_mode = WIREFRAME;
 
     u64 last_time = get_time()-10000;
 
@@ -140,8 +132,8 @@ int main(){
 
         handle_input(delta_time);
         if(!window_event()) break;
+
         renderer_update(&main_camera);
-        if(confine_cursor) window_set_cursor_to_center();
     }
 
     return 0;

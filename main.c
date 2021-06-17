@@ -4,8 +4,8 @@
 #include "utils.h"
 #include "math.h"
 #include "renderer.h"
-#include "mesh.h"
 #include "fast_obj.h" // @Note replace this with mesh.h
+#include "hashtable.h"
 
 #include <stdio.h>
 #include <assert.h>
@@ -47,10 +47,6 @@ void mouse_callback(MousePos mouse_pos){
 }
 
 Camera main_camera;
-
-void print_vec3(Vec3 v){
-    printf("%f %f %f\n", v.x, v.y, v.z);
-}
 
 void handle_input(f32 delta_time){
     f32 speed = 4;
@@ -100,9 +96,6 @@ int main(){
     init_camera(&main_camera, (Vec3){0, 1, -5}, 90, 0.1, 10000,
                 (Vec4){1, 1, 1, 1});
 
-    Shader plain_shader;
-    init_shader(&plain_shader, "shaders/plain_vertex.glsl", "shaders/plain_fragment.glsl");
-
     fastObjMesh* sphere_mesh = fast_obj_read("models/sphere.obj");
     if(sphere_mesh == NULL){
         error("fast_obj_read: can't load model file `models/sphere.obj`");
@@ -114,14 +107,22 @@ int main(){
         return 0;
     }
 
-    Renderable sphere;
-    init_renderable(&sphere, sphere_mesh, plain_shader);
-    sphere.transform.position = (Vec3){0, 1, 0};
-    Renderable ground;
-    init_renderable(&ground, plane_mesh, plain_shader);
-    ground.transform.scale = (Vec3){50, 1, 50};
-    ground.enable_face_culling = 0;
-    ground.rasterization_mode = WIREFRAME;
+    Shader* plain_shader = init_shader("shaders/plain_vertex.glsl", "shaders/plain_fragment.glsl");
+
+    Material* simple_material1 = init_material(plain_shader);
+    Material* simple_material2 = init_material(plain_shader);
+
+    Renderable* sphere = init_renderable(sphere_mesh, simple_material1);
+    sphere->transform.position = (Vec3){0, 1, 0};
+    Renderable* ground = init_renderable(plane_mesh, simple_material2);
+    ground->transform.scale = (Vec3){50, 1, 50};
+    ground->enable_face_culling = 0;
+    ground->rasterization_mode = WIREFRAME;
+
+    Vec3 v1 = (Vec3){1, 0, 0};
+    material_set_uniform(simple_material1, "color", &v1.v);
+    Vec3 v2 = (Vec3){1, 0, 1};
+    material_set_uniform(simple_material2, "color", &v2.v);
 
     u64 last_time = get_time()-10000;
 

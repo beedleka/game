@@ -31,9 +31,10 @@ extern KeyState keyboard[MAX_KEYCODES];
 
 extern WindowState current_window_state;
 extern WindowSize current_window_size;
+extern int confine_cursor_to_center;
 
 void window_close();
-int window_create(char* title, int width, int height);
+int window_create(const char* title, int width, int height);
 int window_event();
 void window_set_title(const char* title);
 void window_set_resize_callback(void (*callback)());

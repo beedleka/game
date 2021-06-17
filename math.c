@@ -212,6 +212,7 @@ Vec3 vec3_lerp(Vec3 a, Vec3 b, f32 t){
 
 Vec4 vec4_normalize(Vec4 v){
     f32 m = vec4_magnitude(v);
+    if(m == 0) return (Vec4){0, 0, 0, 0};
     return (Vec4){
         v.x/m,
         v.y/m,
@@ -254,6 +255,7 @@ f32 quat_magnitude(Quaternion q){
 
 Quaternion quat_normalize(Quaternion q){
     f32 m = quat_magnitude(q);
+    if(m == 0) return (Quaternion){0, 0, 0, 0};
     return (Quaternion){
         q.x/m,
         q.y/m,

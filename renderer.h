@@ -1,7 +1,10 @@
+#pragma once
+
 #include "types.h"
 #include "math.h"
 #include "opengl.h"
 #include "fast_obj.h" // @Note replace this with mesh.h
+#include "hashtable.h"
 
 typedef struct Transform{
     Vec3 position;
@@ -23,15 +26,26 @@ typedef enum{
     WIREFRAME
 } RasterizationMode;
 
+typedef struct Uniform{
+    u32 location;
+    GLenum type;
+} Uniform;
+
 typedef struct Shader{
-    u32 shader_program;
-    u32 mvp_location; // @Note we need a generalized way to store shader uniforms, hashmap maybe?
+    u32 program;
+    Ht* uniforms;
 } Shader;
 
+typedef struct Material{
+    Shader* shader;
+    Ht* uniforms_values;
+} Material;
+
 typedef struct Renderable{
+    int id;
     Transform transform;
     fastObjMesh* mesh;
-    Shader shader;
+    Material* material;
     u32 vertex_array_object;
     RasterizationMode rasterization_mode;
     int enable_face_culling;
@@ -46,10 +60,16 @@ void renderer_set_viewport(int x, int y, int width, int height);
 void renderer_set_swap_interval(int interval);
 void renderer_clear(Vec4 clear_color);
 void renderer_swap_buffers();
-void init_shader(Shader* shader, char* vertex_shader_filename, char* fragment_shader_filename);
 void renderer_update();
-void init_renderable(Renderable* renderable, fastObjMesh* mesh, Shader shader);
+Renderable* init_renderable(fastObjMesh* mesh, Material* material);
+void free_renderable(Renderable* renderable);
+Material* init_material(Shader* shader);
+void free_material(Material* material);
+Shader* init_shader(const char* vertex_shader_filename, const char* fragment_shader_filename);
+void free_shader(Shader* shader);
 void init_camera(Camera* camera, Vec3 position, f32 field_of_view, f32 near_plane,
                 f32 far_plane,
                 Vec4 clear_color);
 void renderer_close();
+void material_set_uniform(Material* material, const char* name, void* value);
+void shader_upload_uniform(Uniform* uniform, void* value);

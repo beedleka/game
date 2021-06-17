@@ -3,6 +3,7 @@
 WindowState current_window_state = WINDOWED;
 WindowSize current_window_size;
 WindowSize original_window_size;
+int confine_cursor_to_center = 1;
 
 KeyState keyboard[MAX_KEYCODES] = {RELEASED};
 
@@ -71,9 +72,11 @@ static LRESULT CALLBACK window_procedure(HWND window_handle, UINT message, WPARA
                     mouse_callback((MousePos){raw_input->data.mouse.lLastX, raw_input->data.mouse.lLastY});
                 }
 
-                RECT rect;
-                GetWindowRect(window_handle, &rect);
-                SetCursorPos((rect.right+rect.left)/2, (rect.top+rect.bottom)/2);
+                if(confine_cursor_to_center){
+                    RECT rect;
+                    GetWindowRect(window_handle, &rect);
+                    SetCursorPos((rect.right+rect.left)/2, (rect.top+rect.bottom)/2);
+                }
             }
             break;
         case WM_CLOSE:
@@ -99,7 +102,7 @@ void win32_print_last_error(char* msg){
     error("%s %S", msg, buff);
 }
 
-int window_create(char* title, int width, int height){
+int window_create(const char* title, int width, int height){
     current_window_size.width = width;
     current_window_size.height = height;
     original_window_size.width = width;
@@ -218,7 +221,7 @@ Display* display;
 Window window;
 Atom delete_window_atom;
 
-int window_create(char* title, int width, int height){
+int window_create(const char* title, int width, int height){
     current_window_size.width = width;
     current_window_size.height = height;
     original_window_size.width = width;

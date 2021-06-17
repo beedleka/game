@@ -21,9 +21,11 @@ glUseProgram_TYPE glUseProgram;
 glGenVertexArrays_TYPE glGenVertexArrays;
 glBindVertexArray_TYPE glBindVertexArray;
 glUniformMatrix4fv_TYPE glUniformMatrix4fv;
+glUniform3fv_TYPE glUniform3fv;
 glUniform1i_TYPE glUniform1i;
 glGetUniformLocation_TYPE glGetUniformLocation;
 glGetStringi_TYPE glGetStringi;
+glGetActiveUniform_TYPE glGetActiveUniform;
 
 void* get_proc_address(const char* name){
 #ifdef _WIN32
@@ -78,12 +80,18 @@ static int load_opengl_functions(){
     if(glBindVertexArray == NULL) return 1;
     glUniformMatrix4fv = (glUniformMatrix4fv_TYPE)get_proc_address("glUniformMatrix4fv");
     if(glUniformMatrix4fv == NULL) return 1;
+    glUniform3fv = (glUniform3fv_TYPE)get_proc_address("glUniform3fv");
+    if(glUniform3fv == NULL) return 1;
     glUniform1i = (glUniform1i_TYPE)get_proc_address("glUniform1i");
     if(glUniform1i == NULL) return 1;
     glGetUniformLocation = (glGetUniformLocation_TYPE)get_proc_address("glGetUniformLocation");
     if(glGetUniformLocation == NULL) return 1;
     glGetStringi = (glGetStringi_TYPE)get_proc_address("glGetStringi");
     if(glGetStringi == NULL) return 1;
+    glGetActiveUniform = (glGetActiveUniform_TYPE)get_proc_address("glGetActiveUniform");
+    if(glGetActiveUniform == NULL) return 1;
+    glDeleteProgram = (glDeleteProgram_TYPE)get_proc_address("glDeleteProgram");
+    if(glDeleteProgram == NULL) return 1;
 
     return 0;
 }
@@ -528,7 +536,7 @@ void opengl_clear(Vec4 clear_color){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-u32 opengl_load_shader(char* vertex_shader_filepath, char* fragment_shader_filepath){
+u32 opengl_load_shader(const char* vertex_shader_filepath, const char* fragment_shader_filepath){
     FILE* vertex_shader_file = fopen(vertex_shader_filepath, "rb");
     FILE* fragment_shader_file = fopen(fragment_shader_filepath, "rb");
 
@@ -580,21 +588,21 @@ u32 opengl_load_shader(char* vertex_shader_filepath, char* fragment_shader_filep
         return 0;
     }
 
-    u32 shader_program = glCreateProgram();
-    glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
-    glLinkProgram(shader_program);
+    u32 program = glCreateProgram();
+    glAttachShader(program, vertex_shader);
+    glAttachShader(program, fragment_shader);
+    glLinkProgram(program);
 
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
-    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
     if(!success){
-        glGetProgramInfoLog(shader_program, 512, NULL, info);
-        glDeleteProgram(shader_program);
+        glGetProgramInfoLog(program, 512, NULL, info);
+        glDeleteProgram(program);
         error("opengl_load_shader: Failed to link shader program:\n%s", info);
         return 0;
     }
 
-    return shader_program;
+    return program;
 }

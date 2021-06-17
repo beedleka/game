@@ -1,10 +1,13 @@
 #include "renderer.h"
+#include "hashtable.h"
+#include "opengl.h"
+#include <stdio.h>
 
 Renderable** renderables;
 int living_renderables = 0;
 
 int renderer_init(){
-    renderables = malloc(MAX_RENDERABLES*sizeof(Renderable));
+    renderables = calloc(MAX_RENDERABLES, sizeof(Renderable));
     return opengl_init(3, 3);
 }
 
@@ -44,7 +47,6 @@ void renderer_update(Camera* camera){
     Mat4 v = lookat_matrix(camera->position, vec3_add(camera->position, forward), (Vec3){0, 1, 0});
 
     for(int i = 0; i < living_renderables; i++){
-        glUseProgram(renderables[i]->shader.shader_program);
         glBindVertexArray(renderables[i]->vertex_array_object);
 
         Mat4 m = mat4_id();
@@ -55,7 +57,15 @@ void renderer_update(Camera* camera){
         Mat4 mvp = mat4_id();
         mvp = mat4_mat4_mul(m, mat4_mat4_mul(v, p));
 
-        glUniformMatrix4fv(renderables[i]->shader.mvp_location, 1, GL_FALSE, mvp.m);
+        material_set_uniform(renderables[i]->material, "mvp", &mvp.m);
+
+        // @Note Use uniform buffer object to upload in bulk
+        Shader* curr_shader = renderables[i]->material->shader;
+        glUseProgram(curr_shader->program);
+        Hti it = ht_iter(renderables[i]->material->uniforms_values);
+        while(ht_next(&it)){
+            shader_upload_uniform(ht_get(curr_shader->uniforms, it.key), it.value);
+        }
 
         if(renderables[i]->enable_face_culling){
             glEnable(GL_CULL_FACE);
@@ -79,10 +89,28 @@ void renderer_update(Camera* camera){
     renderer_swap_buffers();
 }
 
-void init_renderable(Renderable* renderable, fastObjMesh* mesh, Shader shader){
+void material_set_uniform(Material* material, const char* name, void* value){
+    ht_set(material->uniforms_values, name, value);
+}
+
+void shader_upload_uniform(Uniform* uniform, void* value){
+    switch(uniform->type){
+        case GL_FLOAT_MAT4:
+            glUniformMatrix4fv(uniform->location, 1, GL_FALSE, value);
+            break;
+        case GL_FLOAT_VEC3:
+            glUniform3fv(uniform->location, 1, value);
+            break;
+        default:
+            error("Unknown uniform type");
+    }
+}
+
+Renderable* init_renderable(fastObjMesh* mesh, Material* material){
+    Renderable* renderable = malloc(sizeof(Renderable));
     if(living_renderables == MAX_RENDERABLES){
         error("Maximum renderables reached");
-        return;
+        return NULL;
     }
 
     u32 vbo, vao, ebo;
@@ -114,24 +142,71 @@ void init_renderable(Renderable* renderable, fastObjMesh* mesh, Shader shader){
 
     renderable->mesh = mesh;
     renderable->vertex_array_object = vao;
-    renderable->shader = shader;
+    renderable->material = material;
     renderable->rasterization_mode = SOLID;
     renderable->transform.position = (Vec3){0, 0, 0};
     renderable->transform.scale = (Vec3){1, 1, 1};
     renderable->transform.rotation = quat_id();
     renderable->enable_face_culling = 1;
+    renderable->id = living_renderables;
 
     renderables[living_renderables] = renderable;
     living_renderables++;
+    return renderable;
 }
 
-void init_shader(Shader* shader, char* vertex_shader_filename, char* fragment_shader_filename){
-    u32 shader_program = opengl_load_shader(vertex_shader_filename, fragment_shader_filename);
-    if(shader_program != 0){
-        shader->shader_program = shader_program;
-        glUseProgram(shader_program);
-        shader->mvp_location = glGetUniformLocation(shader_program, "mvp");
+void free_renderable(Renderable* renderable){
+    if(living_renderables > 1){
+        renderables[renderable->id] = renderables[living_renderables-1];
+        renderables[renderable->id]->id = renderable->id;
+        renderables[living_renderables-1] = NULL;
     }
+    free(renderable);
+    living_renderables--;
+}
+
+Material* init_material(Shader* shader){
+    Material* material = malloc(sizeof(Material));
+    material->shader = shader;
+    material->uniforms_values = ht_create();
+    return material;
+}
+
+void free_material(Material* material){
+    ht_destroy(material->uniforms_values);
+    free(material);
+}
+
+Shader* init_shader(const char* vertex_shader_filename, const char* fragment_shader_filename){
+    Shader* shader = malloc(sizeof(Shader));
+    u32 program = opengl_load_shader(vertex_shader_filename, fragment_shader_filename);
+    if(program != 0){
+        shader->program = program;
+        glUseProgram(program);
+
+        shader->uniforms = ht_create();
+
+        int uniform_count;
+        glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &uniform_count);
+        GLint uniform_size;
+        GLenum uniform_type;
+        const GLsizei buffer_size = 256;
+        GLchar uniform_name[256];
+        for(int i = 0; i < uniform_count; i++){
+            glGetActiveUniform(program, (GLuint)i, buffer_size, NULL, &uniform_size, &uniform_type, uniform_name);
+            Uniform* uniform = malloc(sizeof(Uniform));
+            uniform->location = glGetUniformLocation(program, uniform_name);
+            uniform->type = uniform_type;
+            ht_set(shader->uniforms, uniform_name, uniform);
+        }
+    }
+    return shader;
+}
+
+void free_shader(Shader* shader){
+    ht_destroy(shader->uniforms);
+    glDeleteProgram(shader->program);
+    free(shader);
 }
 
 void init_camera(Camera* camera, Vec3 position, f32 field_of_view, f32 near_plane,

@@ -7,6 +7,14 @@
 #define PI 3.14159265358979323846264338327950288
 
 typedef union{
+    f32 v[2];
+    struct{
+        f32 x;
+        f32 y;
+    };
+} Vec2;
+
+typedef union{
     f32 v[3];
     struct{
         f32 x;

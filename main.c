@@ -4,7 +4,6 @@
 #include "utils.h"
 #include "math.h"
 #include "renderer.h"
-#include "fast_obj.h" // @Note replace this with mesh.h
 #include "hashtable.h"
 
 #include <stdio.h>
@@ -88,6 +87,7 @@ int main(){
         return 1;
     }
     renderer_set_swap_interval(1);
+    confine_cursor_to_center = 0;
 
     window_set_resize_callback(resize_callback);
     window_set_keyboard_callback(keyboard_callback);
@@ -96,33 +96,29 @@ int main(){
     init_camera(&main_camera, (Vec3){0, 1, -5}, 90, 0.1, 10000,
                 (Vec4){1, 1, 1, 1});
 
-    fastObjMesh* sphere_mesh = fast_obj_read("models/sphere.obj");
-    if(sphere_mesh == NULL){
-        error("fast_obj_read: can't load model file `models/sphere.obj`");
-        return 0;
-    }
-    fastObjMesh* plane_mesh = fast_obj_read("models/plane.obj");
-    if(plane_mesh == NULL){
-        error("fast_obj_read: can't load model file `models/plane.obj`");
-        return 0;
-    }
+    Mesh* cube_mesh = init_mesh("models/cube.obj");
+    Mesh* plane_mesh = init_mesh("models/plane.obj");
+
+    Texture* texture = init_texture("textures/texture.png", WRAP_REPEAT,
+                        FILTER_LINEAR, FILTER_LINEAR);
 
     Shader* plain_shader = init_shader("shaders/plain_vertex.glsl", "shaders/plain_fragment.glsl");
 
     Material* simple_material1 = init_material(plain_shader);
+    simple_material1->texture = texture;
     Material* simple_material2 = init_material(plain_shader);
 
-    Renderable* sphere = init_renderable(sphere_mesh, simple_material1);
-    sphere->transform.position = (Vec3){0, 1, 0};
+    Renderable* cube = init_renderable(cube_mesh, simple_material1);
+    cube->transform.position = (Vec3){0, 1, 0};
     Renderable* ground = init_renderable(plane_mesh, simple_material2);
-    ground->transform.scale = (Vec3){50, 1, 50};
     ground->enable_face_culling = 0;
-    ground->rasterization_mode = WIREFRAME;
+    ground->rasterization_mode = RASTERIZATION_WIREFRAME;
 
     Vec3 v1 = (Vec3){1, 0, 0};
     material_set_uniform(simple_material1, "color", &v1.v);
-    Vec3 v2 = (Vec3){1, 0, 1};
+    Vec3 v2 = (Vec3){0, 0, 0};
     material_set_uniform(simple_material2, "color", &v2.v);
+    // free_mesh(cube_mesh);
 
     u64 last_time = get_time()-10000;
 

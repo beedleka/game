@@ -12,17 +12,12 @@ typedef struct GLExtensions{
     int GL_ARB_compute_shader_available;
 } GLExtensions;
 
-int opengl_init(int opengl_major_version, int opengl_minor_version);
+int opengl_init(int opengl_major_version, int opengl_minor_version, int multisample);
 void opengl_swap_buffers();
 u32 opengl_load_shader(const char* vertex_shader_filepath, const char* fragment_shader_filepath);
 void opengl_set_swap_interval(int interval);
 void opengl_set_viewport(int x, int y, int width, int height);
 void opengl_clear(Vec4 clear_color);
-
-#ifdef _WIN32
-
-#include <windows.h>
-#include <GL/gl.h>
 
 #define GL_FLOAT_VEC2 0x8B50
 #define GL_FLOAT_VEC3 0x8B51
@@ -86,10 +81,10 @@ void opengl_clear(Vec4 clear_color);
 #define GL_BLEND_SRC 0x0BE1
 #define GL_BLEND 0x0BE2
 #define GL_ACTIVE_UNIFORMS 0x8B86
-
-#if defined(_WIN32) && !defined(APIENTRY)
-#define APIENTRY __stdcall
-#endif
+#define GL_REPEAT 0x2901
+#define GL_MIRRORED_REPEAT 0x8370
+#define GL_CLAMP_TO_EDGE 0x812F
+#define GL_CLAMP_TO_BORDER 0x812D
 
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
@@ -113,6 +108,80 @@ typedef char GLchar;
 typedef char GLcharARB;
 typedef size_t GLsizeiptr;
 
+typedef GLuint (APIENTRY* glCreateShader_TYPE)(GLenum);
+typedef void (APIENTRY* glShaderSource_TYPE)(GLuint, GLsizei, const GLchar**, const GLint*);
+typedef void (APIENTRY* glCompileShader_TYPE)(GLuint);
+typedef void (APIENTRY* glGetShaderiv_TYPE)(GLuint, GLenum, GLint*);
+typedef void (APIENTRY* glDeleteShader_TYPE)(GLuint);
+typedef void (APIENTRY* glGetShaderInfoLog_TYPE)(GLuint, GLsizei, GLsizei*, GLchar*);
+typedef GLuint (APIENTRY* glCreateProgram_TYPE)(void);
+typedef void (APIENTRY* glAttachShader_TYPE)(GLuint, GLuint);
+typedef void (APIENTRY* glLinkProgram_TYPE)(GLuint);
+typedef void (APIENTRY* glGetProgramiv_TYPE)(GLuint, GLenum, GLint*);
+typedef void (APIENTRY* glGetProgramInfoLog_TYPE)(GLuint, GLsizei, GLsizei*, GLchar*);
+typedef void (APIENTRY* glDeleteProgram_TYPE)(GLuint);
+typedef void (APIENTRY* glGenBuffers_TYPE)(GLsizei, GLuint*);
+typedef void (APIENTRY* glBindBuffer_TYPE)(GLenum, GLuint);
+typedef void (APIENTRY* glBufferData_TYPE)(GLenum, GLsizeiptr, const void*, GLenum);
+typedef void (APIENTRY* glVertexAttribPointer_TYPE)(GLuint, GLint, GLenum, GLboolean, GLsizei, const void*);
+typedef void (APIENTRY* glEnableVertexAttribArray_TYPE)(GLuint);
+typedef void (APIENTRY* glUseProgram_TYPE)(GLuint);
+typedef void (APIENTRY* glGenVertexArrays_TYPE)(GLsizei, GLuint*);
+typedef void (APIENTRY* glBindVertexArray_TYPE)(GLuint);
+typedef void (APIENTRY* glUniformMatrix4fv_TYPE)(GLint, GLsizei, GLboolean, const GLfloat*);
+typedef void (APIENTRY* glUniform3fv_TYPE)(GLint, GLsizei, GLfloat*);
+typedef void (APIENTRY* glUniform1i_TYPE)(GLint, GLint);
+typedef GLint (APIENTRY* glGetUniformLocation_TYPE)(GLuint, const GLchar*);
+typedef const GLubyte* (APIENTRY* glGetStringi_TYPE)(GLenum, GLuint);
+typedef void (APIENTRY* glGetActiveUniform_TYPE)(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*);
+typedef void (APIENTRY* glDeleteProgram_TYPE)(GLuint);
+typedef void (APIENTRY* glGenerateMipmap_TYPE)(GLenum);
+typedef void (APIENTRY* glGetBufferSubData_TYPE)(GLenum, size_t, GLsizeiptr, void*);
+typedef void (APIENTRY* glDeleteVertexArrays_TYPE)(GLsizei, const GLuint*);
+typedef void (APIENTRY* glDeleteBuffers_TYPE)(GLsizei, const GLuint*);
+
+extern glCreateShader_TYPE glCreateShader;
+extern glShaderSource_TYPE glShaderSource;
+extern glCompileShader_TYPE glCompileShader;
+extern glGetShaderiv_TYPE glGetShaderiv;
+extern glDeleteShader_TYPE glDeleteShader;
+extern glGetShaderInfoLog_TYPE glGetShaderInfoLog;
+extern glCreateProgram_TYPE glCreateProgram;
+extern glAttachShader_TYPE glAttachShader;
+extern glLinkProgram_TYPE glLinkProgram;
+extern glGetProgramiv_TYPE glGetProgramiv;
+extern glGetProgramInfoLog_TYPE glGetProgramInfoLog;
+extern glDeleteProgram_TYPE glDeleteProgram;
+extern glGenBuffers_TYPE glGenBuffers;
+extern glBindBuffer_TYPE glBindBuffer;
+extern glBufferData_TYPE glBufferData;
+extern glVertexAttribPointer_TYPE glVertexAttribPointer;
+extern glEnableVertexAttribArray_TYPE glEnableVertexAttribArray;
+extern glUseProgram_TYPE glUseProgram;
+extern glGenVertexArrays_TYPE glGenVertexArrays;
+extern glBindVertexArray_TYPE glBindVertexArray;
+extern glUniformMatrix4fv_TYPE glUniformMatrix4fv;
+extern glUniform3fv_TYPE glUniform3fv;
+extern glUniform1i_TYPE glUniform1i;
+extern glGetUniformLocation_TYPE glGetUniformLocation;
+extern glGetStringi_TYPE glGetStringi;
+extern glGetActiveUniform_TYPE glGetActiveUniform;
+extern glDeleteProgram_TYPE glDeleteProgram;
+extern glGenerateMipmap_TYPE glGenerateMipmap;
+extern glGetBufferSubData_TYPE glGetBufferSubData;
+extern glDeleteVertexArrays_TYPE glDeleteVertexArrays;
+extern glDeleteBuffers_TYPE glDeleteBuffers;
+
+#if defined(_WIN32) && !defined(APIENTRY)
+#define APIENTRY __stdcall
+#endif
+
+#ifdef _WIN32
+
+#include <windows.h>
+#include <GL/gl.h>
+
+#define WGL_SAMPLES_ARB 0x2042
 #define WGL_DRAW_TO_WINDOW_ARB 0x2001
 #define WGL_SUPPORT_OPENGL_ARB 0x2010
 #define WGL_DOUBLE_BUFFER_ARB 0x2011
@@ -155,59 +224,3 @@ typedef void (*glXSwapIntervalMESA_TYPE)(int);
 typedef GLXContext (*glXCreateContextAttribsARB_TYPE)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
 #endif
-
-typedef GLuint (APIENTRY* glCreateShader_TYPE)(GLenum);
-typedef void (APIENTRY* glShaderSource_TYPE)(GLuint, GLsizei, const GLchar**, const GLint*);
-typedef void (APIENTRY* glCompileShader_TYPE)(GLuint);
-typedef void (APIENTRY* glGetShaderiv_TYPE)(GLuint, GLenum, GLint*);
-typedef void (APIENTRY* glDeleteShader_TYPE)(GLuint);
-typedef void (APIENTRY* glGetShaderInfoLog_TYPE)(GLuint, GLsizei, GLsizei*, GLchar*);
-typedef GLuint (APIENTRY* glCreateProgram_TYPE)(void);
-typedef void (APIENTRY* glAttachShader_TYPE)(GLuint, GLuint);
-typedef void (APIENTRY* glLinkProgram_TYPE)(GLuint);
-typedef void (APIENTRY* glGetProgramiv_TYPE)(GLuint, GLenum, GLint*);
-typedef void (APIENTRY* glGetProgramInfoLog_TYPE)(GLuint, GLsizei, GLsizei*, GLchar*);
-typedef void (APIENTRY* glDeleteProgram_TYPE)(GLuint);
-typedef void (APIENTRY* glGenBuffers_TYPE)(GLsizei, GLuint*);
-typedef void (APIENTRY* glBindBuffer_TYPE)(GLenum, GLuint);
-typedef void (APIENTRY* glBufferData_TYPE)(GLenum, GLsizeiptr, const void*, GLenum);
-typedef void (APIENTRY* glVertexAttribPointer_TYPE)(GLuint, GLint, GLenum, GLboolean, GLsizei, const void*);
-typedef void (APIENTRY* glEnableVertexAttribArray_TYPE)(GLuint);
-typedef void (APIENTRY* glUseProgram_TYPE)(GLuint);
-typedef void (APIENTRY* glGenVertexArrays_TYPE)(GLsizei, GLuint*);
-typedef void (APIENTRY* glBindVertexArray_TYPE)(GLuint);
-typedef void (APIENTRY* glUniformMatrix4fv_TYPE)(GLint, GLsizei, GLboolean, const GLfloat*);
-typedef void (APIENTRY* glUniform3fv_TYPE)(GLint, GLsizei, GLfloat*);
-typedef void (APIENTRY* glUniform1i_TYPE)(GLint, GLint);
-typedef GLint (APIENTRY* glGetUniformLocation_TYPE)(GLuint, const GLchar*);
-typedef const GLubyte* (APIENTRY* glGetStringi_TYPE)(GLenum, GLuint);
-typedef void (APIENTRY* glGetActiveUniform_TYPE)(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*);
-typedef void (APIENTRY* glDeleteProgram_TYPE)(GLuint);
-
-extern glCreateShader_TYPE glCreateShader;
-extern glShaderSource_TYPE glShaderSource;
-extern glCompileShader_TYPE glCompileShader;
-extern glGetShaderiv_TYPE glGetShaderiv;
-extern glDeleteShader_TYPE glDeleteShader;
-extern glGetShaderInfoLog_TYPE glGetShaderInfoLog;
-extern glCreateProgram_TYPE glCreateProgram;
-extern glAttachShader_TYPE glAttachShader;
-extern glLinkProgram_TYPE glLinkProgram;
-extern glGetProgramiv_TYPE glGetProgramiv;
-extern glGetProgramInfoLog_TYPE glGetProgramInfoLog;
-extern glDeleteProgram_TYPE glDeleteProgram;
-extern glGenBuffers_TYPE glGenBuffers;
-extern glBindBuffer_TYPE glBindBuffer;
-extern glBufferData_TYPE glBufferData;
-extern glVertexAttribPointer_TYPE glVertexAttribPointer;
-extern glEnableVertexAttribArray_TYPE glEnableVertexAttribArray;
-extern glUseProgram_TYPE glUseProgram;
-extern glGenVertexArrays_TYPE glGenVertexArrays;
-extern glBindVertexArray_TYPE glBindVertexArray;
-extern glUniformMatrix4fv_TYPE glUniformMatrix4fv;
-extern glUniform3fv_TYPE glUniform3fv;
-extern glUniform1i_TYPE glUniform1i;
-extern glGetUniformLocation_TYPE glGetUniformLocation;
-extern glGetStringi_TYPE glGetStringi;
-extern glGetActiveUniform_TYPE glGetActiveUniform;
-extern glDeleteProgram_TYPE glDeleteProgram;

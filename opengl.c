@@ -26,6 +26,10 @@ glUniform1i_TYPE glUniform1i;
 glGetUniformLocation_TYPE glGetUniformLocation;
 glGetStringi_TYPE glGetStringi;
 glGetActiveUniform_TYPE glGetActiveUniform;
+glGenerateMipmap_TYPE glGenerateMipmap;
+glGetBufferSubData_TYPE glGetBufferSubData;
+glDeleteVertexArrays_TYPE glDeleteVertexArrays;
+glDeleteBuffers_TYPE glDeleteBuffers;
 
 void* get_proc_address(const char* name){
 #ifdef _WIN32
@@ -92,7 +96,14 @@ static int load_opengl_functions(){
     if(glGetActiveUniform == NULL) return 1;
     glDeleteProgram = (glDeleteProgram_TYPE)get_proc_address("glDeleteProgram");
     if(glDeleteProgram == NULL) return 1;
-
+    glGenerateMipmap = (glGenerateMipmap_TYPE)get_proc_address("glGenerateMipmap");
+    if(glGenerateMipmap == NULL) return 1;
+    glGetBufferSubData = (glGetBufferSubData_TYPE)get_proc_address("glGetBufferSubData");
+    if(glGetBufferSubData == NULL) return 1;
+    glDeleteVertexArrays = (glDeleteVertexArrays_TYPE)get_proc_address("glDeleteVertexArrays");
+    if(glDeleteVertexArrays == NULL) return 1;
+    glDeleteBuffers = (glDeleteBuffers_TYPE)get_proc_address("glDeleteBuffers");
+    if(glDeleteBuffers == NULL) return 1;
     return 0;
 }
 
@@ -139,7 +150,7 @@ int load_wgl_functions(){
     10/ Load OpenGL functions
     11/ Check OpenGL extensions
 */
-int opengl_init(int opengl_major_version, int opengl_minor_version){
+int opengl_init(int opengl_major_version, int opengl_minor_version, int multisample){
     if(device_context == NULL){
         error("opengl_init: A window is needed for opengl context creation");
         return 1;
@@ -294,6 +305,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
         WGL_COLOR_BITS_ARB, 32,
         WGL_DEPTH_BITS_ARB, 24,
         WGL_STENCIL_BITS_ARB, 8,
+        WGL_SAMPLES_ARB, multisample,
         0,
     };
 
@@ -319,7 +331,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version){
     const int context_attributes[] = {
         WGL_CONTEXT_MAJOR_VERSION_ARB, opengl_major_version,
         WGL_CONTEXT_MINOR_VERSION_ARB, opengl_minor_version,
-        WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
         0,
     };
 
@@ -403,7 +415,7 @@ int load_glx_functions(){
     return 0;
 }
 
-int opengl_init(int opengl_major_version, int opengl_minor_version){
+int opengl_init(int opengl_major_version, int opengl_minor_version, int multisample){
     int glx_major, glx_minor;
     if(!glXQueryVersion(display, &glx_major, &glx_minor) ||
         (glx_major < 1) || (glx_major == 1 && glx_minor < 3)){

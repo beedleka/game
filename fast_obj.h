@@ -1322,17 +1322,17 @@ fastObjMesh* fast_obj_read_with_callbacks(const char* path, const fastObjCallbac
     m->groups         = 0;
 
 
-    /* Add dummy position/texcoord/normal */
-    array_push(m->positions, 0.0f);
-    array_push(m->positions, 0.0f);
-    array_push(m->positions, 0.0f);
+    /* Add dummy position/texcoord/normal  WHY ???????? */
+    // array_push(m->positions, 0.0f);
+    // array_push(m->positions, 0.0f);
+    // array_push(m->positions, 0.0f);
 
-    array_push(m->texcoords, 0.0f);
-    array_push(m->texcoords, 0.0f);
+    // array_push(m->texcoords, 0.0f);
+    // array_push(m->texcoords, 0.0f);
 
-    array_push(m->normals, 0.0f);
-    array_push(m->normals, 0.0f);
-    array_push(m->normals, 1.0f);
+    // array_push(m->normals, 0.0f);
+    // array_push(m->normals, 0.0f);
+    // array_push(m->normals, 1.0f);
 
 
     /* Data needed during parsing */

@@ -9,14 +9,14 @@
 #include <string.h>
 
 typedef struct GLExtensions{
-    int GL_ARB_compute_shader_available;
+    u8 GL_ARB_compute_shader_available;
 } GLExtensions;
 
-int opengl_init(int opengl_major_version, int opengl_minor_version, int multisample);
+u8 opengl_init(i32 opengl_major_version, i32 opengl_minor_version, u32 multisample);
 void opengl_swap_buffers();
 u32 opengl_load_shader(const char* vertex_shader_filepath, const char* fragment_shader_filepath);
-void opengl_set_swap_interval(int interval);
-void opengl_set_viewport(int x, int y, int width, int height);
+void opengl_set_swap_interval(u32 interval);
+void opengl_set_viewport(u32 x, u32 y, u32 width, u32 height);
 void opengl_clear(Vec4 clear_color);
 
 #define GL_FLOAT_VEC2 0x8B50
@@ -198,10 +198,10 @@ extern glDeleteBuffers_TYPE glDeleteBuffers;
 #define ERROR_INVALID_PROFILE_ARB 0x2096
 
 typedef struct WGLExtensions{
-    int WGL_ARB_create_context_available;
-    int WGL_ARB_create_context_profile_available;
-    int WGL_EXT_swap_control_available;
-    int WGL_ARB_pixel_format_available;
+    u8 WGL_ARB_create_context_available;
+    u8 WGL_ARB_create_context_profile_available;
+    u8 WGL_EXT_swap_control_available;
+    u8 WGL_ARB_pixel_format_available;
 } WGLExtensions;
 
 typedef const char* (APIENTRY* wglGetExtensionsStringARB_TYPE)(HDC);
@@ -215,9 +215,9 @@ typedef BOOL (APIENTRY* wglSwapIntervalEXT_TYPE)(int);
 #include <GL/glx.h>
 
 typedef struct GLXExtensions{
-    int GLX_ARB_create_context_available;
-    int GLX_ARB_create_context_profile_available;
-    int MESA_swap_control_available;
+    u8 GLX_ARB_create_context_available;
+    u8 GLX_ARB_create_context_profile_available;
+    u8 MESA_swap_control_available;
 } GLXExtensions;
 
 typedef void (*glXSwapIntervalMESA_TYPE)(int);

@@ -7,7 +7,7 @@
 u64 get_time();
 
 // Sleep ms number of miliseconds
-void sleep_ms(int ms);
+void sleep_ms(u32 ms);
 
 #ifdef _WIN32
 

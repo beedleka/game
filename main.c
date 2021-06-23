@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "window.h"
 #include "time.h"
 #include "types.h"
@@ -7,13 +9,12 @@
 #include "hashtable.h"
 
 #include <stdio.h>
-#include <assert.h>
 
 void resize_callback(){
     renderer_set_viewport(0, 0, current_window_size.width, current_window_size.height);
 }
 
-void keyboard_callback(uint keycode, KeyState key_state){
+void keyboard_callback(u32 keycode, KeyState key_state){
     if(keycode == KEY_ESCAPE && key_state == PRESSED){
         window_close();
     }
@@ -33,10 +34,10 @@ void keyboard_callback(uint keycode, KeyState key_state){
     }
 }
 
-float mouse_sensivity = 0.002;
+f32 mouse_sensitivity = 0.002;
 void mouse_callback(MousePos mouse_pos){
-    main_camera.rotation.x -= mouse_pos.x*mouse_sensivity;
-    main_camera.rotation.y -= mouse_pos.y*mouse_sensivity;
+    main_camera.rotation.x -= mouse_pos.x*mouse_sensitivity;
+    main_camera.rotation.y -= mouse_pos.y*mouse_sensitivity;
     if(main_camera.rotation.y > rad(89.0)) {
         main_camera.rotation.y = rad(89.0);
     }
@@ -50,15 +51,15 @@ Camera main_camera;
 void handle_input(f32 delta_time){
     f32 speed = 4;
     Vec3 forward;
-    float x = main_camera.rotation.x;
-    float y = main_camera.rotation.y;
+    f32 x = main_camera.rotation.x;
+    f32 y = main_camera.rotation.y;
     forward.x = cos(x)*cos(y);
     forward.y = 0;
     forward.z = sin(x)*cos(y);
     forward = vec3_normalize(forward);
     Vec3 right = vec3_normalize(vec3_cross(forward, (Vec3){0.0, 1.0, 0.0}));
-    float x_move = 0;
-    float z_move = 0;
+    f32 x_move = 0;
+    f32 z_move = 0;
     if(keyboard[KEY_D] == PRESSED){
         x_move -= 1;
     }
@@ -76,8 +77,8 @@ void handle_input(f32 delta_time){
         vec3_scale(forward, z_move), vec3_scale(right, x_move))), speed*delta_time));
 }
 
-int main(){
-    int err = window_create("game", 800, 600);
+i32 main(){
+    u8 err = window_create("game", 800, 600);
     if(err){
         return 1;
     }
@@ -96,8 +97,8 @@ int main(){
     init_camera(&main_camera, (Vec3){0, 1, -5}, 90, 0.1, 10000,
                 (Vec4){1, 1, 1, 1});
 
-    Mesh* cube_mesh = init_mesh("models/cube.obj");
-    Mesh* plane_mesh = init_mesh("models/plane.obj");
+    Mesh* cube_mesh = mesh_from_obj("models/cube.obj");
+    Mesh* plane_mesh = mesh_from_obj("models/plane.obj");
 
     Texture* texture = init_texture("textures/texture.png", WRAP_REPEAT,
                         FILTER_LINEAR, FILTER_LINEAR);

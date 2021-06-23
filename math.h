@@ -5,6 +5,14 @@
 #include <math.h>
 
 #define PI 3.14159265358979323846264338327950288
+#define PI2 6.28318530717958647692528676655900576
+
+#ifndef max
+#define max(x, y) (((x) > (y)) ? (x) : (y))
+#endif
+#ifndef min
+#define min(x, y) (((x) < (y)) ? (x) : (y))
+#endif
 
 typedef union{
     f32 v[2];

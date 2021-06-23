@@ -3,20 +3,20 @@
 WindowState current_window_state = WINDOWED;
 WindowSize current_window_size;
 WindowSize original_window_size;
-int confine_cursor_to_center = 1;
+u8 confine_cursor_to_center = 1;
 
 KeyState keyboard[MAX_KEYCODES] = {RELEASED};
 
 void empty_callback(){};
 static void (*resize_callback)() = (void(*)())empty_callback;
-static void (*keyboard_callback)(uint, KeyState) = (void(*)(uint, KeyState))empty_callback;
+static void (*keyboard_callback)(u32, KeyState) = (void(*)(u32, KeyState))empty_callback;
 static void (*mouse_callback)(MousePos) = (void(*)(MousePos))empty_callback;
 
 void window_set_resize_callback(void (*callback)()){
     resize_callback = callback;
 }
 
-void window_set_keyboard_callback(void (*callback)(uint, KeyState)){
+void window_set_keyboard_callback(void (*callback)(u32, KeyState)){
     keyboard_callback = callback;
 }
 
@@ -102,7 +102,7 @@ void win32_print_last_error(char* msg){
     error("%s %S", msg, buff);
 }
 
-int window_create(const char* title, int width, int height){
+u8 window_create(const char* title, u32 width, u32 height){
     current_window_size.width = width;
     current_window_size.height = height;
     original_window_size.width = width;
@@ -125,8 +125,8 @@ int window_create(const char* title, int width, int height){
         win32_print_last_error("AdjustWindowRect:");
         return 1;
     }
-    int adjusted_width = window_rect.right-window_rect.left;
-    int adjusted_height = window_rect.bottom-window_rect.top;
+    u32 adjusted_width = window_rect.right-window_rect.left;
+    u32 adjusted_height = window_rect.bottom-window_rect.top;
 
     window_handle = CreateWindowEx(0,
         window_class_name, title, windowed_style,
@@ -163,7 +163,7 @@ int window_create(const char* title, int width, int height){
     return 0;
 }
 
-int window_event(){
+u8 window_event(){
     MSG message;
     while(PeekMessage(&message, NULL, 0, 0, PM_REMOVE)){
         if(message.message != WM_QUIT){
@@ -205,8 +205,8 @@ void window_set_state(WindowState state){
         RECT window_rect = {0, 0, original_window_size.width, original_window_size.height};
         SetWindowLongPtr(window_handle, GWL_STYLE, windowed_style);
         AdjustWindowRect(&window_rect, windowed_style, FALSE);
-        int pos_x = GetSystemMetrics(SM_CXSCREEN)/2-original_window_size.width/2;
-        int pos_y = GetSystemMetrics(SM_CYSCREEN)/2-original_window_size.height/2;
+        u32 pos_x = GetSystemMetrics(SM_CXSCREEN)/2-original_window_size.width/2;
+        u32 pos_y = GetSystemMetrics(SM_CYSCREEN)/2-original_window_size.height/2;
         MoveWindow(window_handle, pos_x, pos_y,
                     original_window_size.width,
                     original_window_size.height, TRUE);
@@ -221,7 +221,7 @@ Display* display;
 Window window;
 Atom delete_window_atom;
 
-int window_create(const char* title, int width, int height){
+u8 window_create(const char* title, u32 width, u32 height){
     current_window_size.width = width;
     current_window_size.height = height;
     original_window_size.width = width;
@@ -247,7 +247,7 @@ int window_create(const char* title, int width, int height){
     return 0;
 }
 
-int window_event(){
+u8 window_event(){
     while(QLength(display)){
         XEvent event;
         XNextEvent(display, &event);

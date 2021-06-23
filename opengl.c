@@ -41,7 +41,7 @@ void* get_proc_address(const char* name){
 #endif
 }
 
-static int load_opengl_functions(){
+static u8 load_opengl_functions(){
     glCreateShader = (glCreateShader_TYPE)get_proc_address("glCreateShader");
     if(glCreateShader == NULL) return 1;
     glCompileShader = (glCompileShader_TYPE)get_proc_address("glCompileShader");
@@ -110,9 +110,9 @@ static int load_opengl_functions(){
 GLExtensions available_gl_extensions = {0};
 
 void check_opengl_extensions(){
-    int extensions_count;
+    i32 extensions_count;
     glGetIntegerv(GL_NUM_EXTENSIONS, &extensions_count);
-    for(int i = 0; i < extensions_count; i++){
+    for(i32 i = 0; i < extensions_count; i++){
         const unsigned char* extension = glGetStringi(GL_EXTENSIONS, i);
         if(strcmp((char*)extension, "GL_ARB_compute_shader")) available_gl_extensions.GL_ARB_compute_shader_available = 1;
     }
@@ -127,7 +127,7 @@ wglSwapIntervalEXT_TYPE wglSwapIntervalEXT;
 
 WGLExtensions available_wgl_extensions = {0};
 
-int load_wgl_functions(){
+u8 load_wgl_functions(){
     if(available_wgl_extensions.WGL_EXT_swap_control_available){
         wglSwapIntervalEXT = (wglSwapIntervalEXT_TYPE)wglGetProcAddress("wglSwapIntervalEXT");
         if(wglSwapIntervalEXT == NULL) return 1;
@@ -150,7 +150,7 @@ int load_wgl_functions(){
     10/ Load OpenGL functions
     11/ Check OpenGL extensions
 */
-int opengl_init(int opengl_major_version, int opengl_minor_version, int multisample){
+u8 opengl_init(i32 opengl_major_version, i32 opengl_minor_version, u32 multisample){
     if(device_context == NULL){
         error("opengl_init: A window is needed for opengl context creation");
         return 1;
@@ -189,7 +189,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
     dummy_pixel_format.cColorBits = 32;
     dummy_pixel_format.cDepthBits = 24;
     dummy_pixel_format.cStencilBits = 8;
-    int dummy_pixel_format_id = ChoosePixelFormat(dummy_device_context, &dummy_pixel_format);
+    u32 dummy_pixel_format_id = ChoosePixelFormat(dummy_device_context, &dummy_pixel_format);
 
     if(dummy_pixel_format_id == 0){
         error("ChoosePixelFormat: no suitable pixel format found");
@@ -221,7 +221,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
         return 1;
     }
 
-    int err = 0;
+    u8 err = 0;
 
     /* @Note Should we use wglGetExtensionsStringARB or wglGetExtensionsStringEXT ? */
     wglGetExtensionsStringARB = (wglGetExtensionsStringARB_TYPE)wglGetProcAddress("wglGetExtensionsStringARB");
@@ -297,7 +297,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
 
     if(err) return err;
 
-    const int pixel_format_attributes[] = {
+    i32 pixel_format_attributes[] = {
         WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
         WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
         WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
@@ -309,8 +309,8 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
         0,
     };
 
-    int pixel_format;
-    UINT num_formats;
+    i32 pixel_format;
+    u32 num_formats;
     wglChoosePixelFormatARB(device_context, pixel_format_attributes,
                             NULL, 1, &pixel_format, &num_formats);
 
@@ -328,7 +328,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
         return 1;
     }
 
-    const int context_attributes[] = {
+    i32 context_attributes[] = {
         WGL_CONTEXT_MAJOR_VERSION_ARB, opengl_major_version,
         WGL_CONTEXT_MINOR_VERSION_ARB, opengl_minor_version,
         WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
@@ -373,8 +373,8 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
         return 1;
     }
 
-    int major;
-    int minor;
+    i32 major;
+    i32 minor;
     glGetIntegerv(GL_MAJOR_VERSION, &major);
     glGetIntegerv(GL_MINOR_VERSION, &minor);
     if(major != opengl_major_version || minor != opengl_minor_version){
@@ -392,7 +392,7 @@ void opengl_swap_buffers(){
     SwapBuffers(device_context);
 }
 
-void opengl_set_swap_interval(int interval){
+void opengl_set_swap_interval(u32 interval){
     if(wglSwapIntervalEXT == NULL){
         error("opengl_set_swap_interval: wglSwapIntervalEXT isn't available");
         return;
@@ -407,7 +407,7 @@ glXSwapIntervalMESA_TYPE glXSwapIntervalMESA;
 
 GLXExtensions available_glx_extensions = {0};
 
-int load_glx_functions(){
+u8 load_glx_functions(){
     if(available_glx_extensions.MESA_swap_control_available){
         glXSwapIntervalMESA = (glXSwapIntervalMESA_TYPE)glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalMESA");
     }
@@ -415,8 +415,8 @@ int load_glx_functions(){
     return 0;
 }
 
-int opengl_init(int opengl_major_version, int opengl_minor_version, int multisample){
-    int glx_major, glx_minor;
+u8 opengl_init(i32 opengl_major_version, i32 opengl_minor_version, u32 multisample){
+    i32 glx_major, glx_minor;
     if(!glXQueryVersion(display, &glx_major, &glx_minor) ||
         (glx_major < 1) || (glx_major == 1 && glx_minor < 3)){
         error("opengl_init: GLX version must be at least 1.3");
@@ -452,7 +452,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
         return 1;
     }
 
-    int visual_attributes[] = {
+    u32 visual_attributes[] = {
         GLX_X_RENDERABLE, 1,
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
@@ -466,7 +466,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
         0
     };
 
-    int num_framebuffer_config = 0;
+    u32 num_framebuffer_config = 0;
     GLXFBConfig* framebuffer_config = glXChooseFBConfig(display,
                                     DefaultScreen(display), visual_attributes, &num_framebuffer_config);
     if(!framebuffer_config){
@@ -480,7 +480,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
         return 1;
     }
 
-    const int context_attributes[] = {
+    const u32 context_attributes[] = {
         GLX_CONTEXT_MAJOR_VERSION_ARB, opengl_major_version,
         GLX_CONTEXT_MINOR_VERSION_ARB, opengl_minor_version,
         GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
@@ -495,7 +495,7 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
         return 1;
     }
 
-    int err = load_glx_functions();
+    u8 err = load_glx_functions();
     if(err){
         error("load_glx_functions: Failed to load GLX functions");
         return 1;
@@ -510,8 +510,8 @@ int opengl_init(int opengl_major_version, int opengl_minor_version, int multisam
 
     glXMakeCurrent(display, window, opengl_context);
 
-    int major;
-    int minor;
+    u32 major;
+    u32 minor;
     glGetIntegerv(GL_MAJOR_VERSION, &major);
     glGetIntegerv(GL_MINOR_VERSION, &minor);
     info("Loaded OpenGL context %d.%d", major, minor);
@@ -529,7 +529,7 @@ void opengl_swap_buffers(){
     glXSwapBuffers(display, window);
 }
 
-void opengl_set_swap_interval(int interval){
+void opengl_set_swap_interval(u32 interval){
     if(glXSwapIntervalMESA == NULL){
         error("opengl_set_swap_interval: glXSwapIntervalMESA isn't available");
         return;
@@ -539,7 +539,7 @@ void opengl_set_swap_interval(int interval){
 
 #endif
 
-void opengl_set_viewport(int x, int y, int width, int height){
+void opengl_set_viewport(u32 x, u32 y, u32 width, u32 height){
     glViewport(x, y, width, height);
 }
 
@@ -562,7 +562,7 @@ u32 opengl_load_shader(const char* vertex_shader_filepath, const char* fragment_
         return 0;
     }
 
-    int success;
+    i32 success;
     char info[512];
 
     char* vertex_shader_text;

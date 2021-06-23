@@ -11,7 +11,7 @@ u64 get_time(){
     return (u64)time.QuadPart;
 }
 
-void sleep_ms(int ms){
+void sleep_ms(u32 ms){
     Sleep(ms);
 }
 
@@ -23,7 +23,7 @@ u64 get_time(){
     return (u64)((1000000000*(time.tv_sec)+time.tv_nsec)/1000);
 }
 
-void sleep_ms(int ms){
+void sleep_ms(u32 ms){
     struct timespec time;
     time.tv_sec = ms/1000;
     time.tv_nsec = (ms*1000000)%1000000000;

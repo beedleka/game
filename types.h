@@ -13,5 +13,3 @@ typedef int8_t i8;
 typedef float f32;
 typedef double f64;
 typedef uintptr_t ptr;
-
-typedef unsigned int uint;

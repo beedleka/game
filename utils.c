@@ -9,7 +9,7 @@ void load_file_to_buffer(FILE* file, char** buffer){
     (*buffer)[file_size] = '\0';
 }
 
-int str_equals(const char* begin, ptr size, const char* to){
+u8 str_equals(const char* begin, ptr size, const char* to){
     ptr i = 0;
     for(; i < size; i++, begin++){
         if(*begin != *(to+i)){

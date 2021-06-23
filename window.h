@@ -6,8 +6,8 @@
 #include <stdlib.h>
 
 typedef struct WindowSize{
-    int width;
-    int height;
+    u32 width;
+    u32 height;
 } WindowSize;
 
 typedef enum WindowState{
@@ -22,8 +22,8 @@ typedef enum{
 } KeyState;
 
 typedef struct MousePos{
-    int x;
-    int y;
+    i32 x;
+    i32 y;
 } MousePos;
 
 #define MAX_KEYCODES 255 // @Note maybe this should be different for each system?
@@ -31,14 +31,14 @@ extern KeyState keyboard[MAX_KEYCODES];
 
 extern WindowState current_window_state;
 extern WindowSize current_window_size;
-extern int confine_cursor_to_center;
+extern u8 confine_cursor_to_center;
 
 void window_close();
-int window_create(const char* title, int width, int height);
-int window_event();
+u8 window_create(const char* title, u32 width, u32 height);
+u8 window_event();
 void window_set_title(const char* title);
 void window_set_resize_callback(void (*callback)());
-void window_set_keyboard_callback(void (*callback)(uint, KeyState));
+void window_set_keyboard_callback(void (*callback)(u32, KeyState));
 void window_set_mouse_callback(void (*callback)(MousePos));
 void window_set_state(WindowState state);
 

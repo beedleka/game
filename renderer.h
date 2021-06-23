@@ -7,6 +7,8 @@
 #include "stb_image.h" // @Note replace this with image.h
 #include "hashtable.h"
 
+#include <math.h>
+
 #define RASTERIZATION_SOLID GL_FILL
 #define RASTERIZATION_WIREFRAME GL_LINE
 
@@ -36,14 +38,15 @@ typedef struct Camera{
 } Camera;
 
 typedef struct Mesh{
-    int index_count;
+    u32 draw_count;
     u32 vao;
     u32 vbo;
     u32 ebo;
+    u8 draw_arrays;
 } Mesh;
 
 typedef struct Texture{
-    int id;
+    u32 id;
 } Texture;
 
 typedef struct Uniform{
@@ -63,19 +66,19 @@ typedef struct Material{
 } Material;
 
 typedef struct Renderable{
-    int id;
+    u32 id;
     Transform transform;
     Mesh* mesh;
     Material* material;
-    int rasterization_mode;
-    int enable_face_culling;
+    u32 rasterization_mode;
+    u8 enable_face_culling;
 } Renderable;
 
 extern Camera main_camera;
 
-int renderer_init();
-void renderer_set_viewport(int x, int y, int width, int height);
-void renderer_set_swap_interval(int interval);
+u8 renderer_init();
+void renderer_set_viewport(u32 x, u32 y, u32 width, u32 height);
+void renderer_set_swap_interval(u32 interval);
 void renderer_clear(Vec4 clear_color);
 void renderer_swap_buffers();
 void renderer_update();
@@ -85,10 +88,10 @@ Material* init_material(Shader* shader);
 void free_material(Material* material);
 Shader* init_shader(const char* vertex_shader_filepath, const char* fragment_shader_filepath);
 void free_shader(Shader* shader);
-Texture* init_texture(const char* image_filepath, int texture_wrapping_mode,
-                    int texture_min_filtering_mode, int texture_mag_filtering_mode);
+Texture* init_texture(const char* image_filepath, u32 texture_wrapping_mode,
+                    u32 texture_min_filtering_mode, u32 texture_mag_filtering_mode);
 void free_texture(Texture* texture);
-Mesh* init_mesh(const char* mesh_filepath);
+Mesh* mesh_from_obj(const char* obj_filepath);
 void free_mesh(Mesh* mesh);
 void init_camera(Camera* camera, Vec3 position, f32 field_of_view, f32 near_plane,
                 f32 far_plane,

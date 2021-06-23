@@ -4,18 +4,18 @@
 #include <stdio.h>
 
 Renderable** renderables;
-int living_renderables = 0;
+u32 living_renderables = 0;
 
-int renderer_init(){
+u8 renderer_init(){
     renderables = calloc(MAX_RENDERABLES, sizeof(Renderable*));
     return opengl_init(3, 3, 2);
 }
 
-void renderer_set_viewport(int x, int y, int width, int height){
+void renderer_set_viewport(u32 x, u32 y, u32 width, u32 height){
     opengl_set_viewport(x, y, width, height);
 }
 
-void renderer_set_swap_interval(int interval){
+void renderer_set_swap_interval(u32 interval){
     opengl_set_swap_interval(interval);
 }
 
@@ -46,7 +46,10 @@ void renderer_update(Camera* camera){
     forward.z = sin(x)*cos(y);
     Mat4 v = lookat_matrix(camera->position, vec3_add(camera->position, forward), (Vec3){0, 1, 0});
 
-    for(int i = 0; i < living_renderables; i++){
+    for(u32 i = 0; i < living_renderables; i++){
+        if(renderables[i]->mesh == NULL) continue;
+        if(renderables[i]->material == NULL) continue;
+
         glBindVertexArray(renderables[i]->mesh->vao);
 
         Mat4 m = mat4_id();
@@ -81,9 +84,14 @@ void renderer_update(Camera* camera){
             glBindTexture(GL_TEXTURE_2D, renderables[i]->material->texture->id);
         }
 
-        glPolygonMode(GL_FRONT_AND_BACK, renderables[i]->rasterization_mode);
+        if(renderables[i]->mesh->draw_arrays){
+            glDrawArrays(GL_LINES, 0, renderables[i]->mesh->draw_count);
+        }
+        else{
+            glPolygonMode(GL_FRONT_AND_BACK, renderables[i]->rasterization_mode);
+        }
 
-        glDrawElements(GL_TRIANGLES, renderables[i]->mesh->index_count, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, renderables[i]->mesh->draw_count, GL_UNSIGNED_INT, 0);
     }
 
     renderer_swap_buffers();
@@ -107,11 +115,11 @@ void shader_upload_uniform(Uniform* uniform, void* value){
 }
 
 Renderable* init_renderable(Mesh* mesh, Material* material){
-    Renderable* renderable = malloc(sizeof(Renderable));
     if(living_renderables == MAX_RENDERABLES){
         error("init_renderable: Maximum renderables reached");
         return NULL;
     }
+    Renderable* renderable = malloc(sizeof(Renderable));
 
     renderable->id = living_renderables;
     renderable->mesh = mesh;
@@ -137,33 +145,33 @@ void free_renderable(Renderable* renderable){
     living_renderables--;
 }
 
-Mesh* init_mesh(const char* mesh_filepath){
-    fastObjMesh* obj = fast_obj_read(mesh_filepath);
+Mesh* mesh_from_obj(const char* obj_filepath){
+    fastObjMesh* obj = fast_obj_read(obj_filepath);
     if(obj == NULL){
-        error("fast_obj_read: can't load model file %s`", mesh_filepath);
+        error("fast_obj_read: can't load model file %s`", obj_filepath);
         return 0;
     }
 
     Mesh* mesh = malloc(sizeof(Mesh));
 
     struct tmp_vertex{
-        int index;
+        u32 index;
         Vec3 position;
         Vec3 normal;
         Vec2 texcoord;
     };
 
-    int index_count = obj->face_count;
-    unsigned int* indices = malloc(3*index_count*sizeof(unsigned int));
+    u32 index_count = obj->face_count;
+    u32* indices = malloc(3*index_count*sizeof(u32));
 
     Ht* tmp_vertices = ht_create();
     char buffer[256];
-    int index_counter = 0;
-    for(unsigned int i = 0; i < obj->face_count; i++){
-        for(int j = 0; j < 3; j++){
-            int position_index = obj->indices[i*3+j].p-1;
-            int texcoord_index = obj->indices[i*3+j].t-1;
-            int normal_index = obj->indices[i*3+j].n-1;
+    u32 index_counter = 0;
+    for(u32 i = 0; i < obj->face_count; i++){
+        for(u32 j = 0; j < 3; j++){
+            u32 position_index = obj->indices[i*3+j].p-1;
+            u32 texcoord_index = obj->indices[i*3+j].t-1;
+            u32 normal_index = obj->indices[i*3+j].n-1;
             sprintf(buffer, "%d/%d/%d",
                 position_index,
                 texcoord_index,
@@ -189,8 +197,7 @@ Mesh* init_mesh(const char* mesh_filepath){
         }
     }
     Hti it = ht_iter(tmp_vertices);
-    int vertex_count = tmp_vertices->length;
-    mesh->index_count = index_count*3;
+    u32 vertex_count = tmp_vertices->length;
 
     f32* vertices = malloc(vertex_count*sizeof(f32)*8);
     while(ht_next(&it)){
@@ -214,7 +221,7 @@ Mesh* init_mesh(const char* mesh_filepath){
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
     glBufferData(GL_ARRAY_BUFFER, vertex_count*8*sizeof(f32), vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3*index_count*sizeof(unsigned int), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3*index_count*sizeof(u32), indices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(f32), (void*)0);
@@ -223,6 +230,9 @@ Mesh* init_mesh(const char* mesh_filepath){
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(f32), (void*)(6*sizeof(f32)));
     glBindVertexArray(0);
+
+    mesh->draw_count = index_count*3;
+    mesh->draw_arrays = 0;
 
     return mesh;
 }
@@ -256,13 +266,13 @@ Shader* init_shader(const char* vertex_shader_filepath, const char* fragment_sha
 
         shader->uniforms = ht_create();
 
-        int uniform_count;
+        i32 uniform_count;
         glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &uniform_count);
         GLint uniform_size;
         GLenum uniform_type;
         const GLsizei buffer_size = 256;
         GLchar uniform_name[256];
-        for(int i = 0; i < uniform_count; i++){
+        for(i32 i = 0; i < uniform_count; i++){
             glGetActiveUniform(program, (GLuint)i, buffer_size, NULL, &uniform_size, &uniform_type, uniform_name);
             Uniform* uniform = malloc(sizeof(Uniform));
             uniform->location = glGetUniformLocation(program, uniform_name);
@@ -279,9 +289,9 @@ void free_shader(Shader* shader){
     free(shader);
 }
 
-Texture* init_texture(const char* image_filepath, int texture_wrapping_mode,
-                    int texture_min_filtering_mode, int texture_mag_filtering_mode){
-    int width, height, channels;
+Texture* init_texture(const char* image_filepath, u32 texture_wrapping_mode,
+                    u32 texture_min_filtering_mode, u32 texture_mag_filtering_mode){
+    i32 width, height, channels;
     u8* data = stbi_load(image_filepath, &width, &height, &channels, 0);
     if(!data){
         error("init_texture: Can't load image file `%s`", image_filepath);
@@ -289,7 +299,7 @@ Texture* init_texture(const char* image_filepath, int texture_wrapping_mode,
     }
 
     Texture* texture = malloc(sizeof(Texture));
-    unsigned int texture_id;
+    u32 texture_id;
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
 
@@ -297,6 +307,7 @@ Texture* init_texture(const char* image_filepath, int texture_wrapping_mode,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, texture_wrapping_mode);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_min_filtering_mode);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_mag_filtering_mode);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height,
                 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     stbi_image_free(data);

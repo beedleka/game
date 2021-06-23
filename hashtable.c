@@ -56,7 +56,9 @@ const char* ht_set_entry(HtEntry* entries, size_t capacity, size_t* length,
     }
 
     if(length != NULL){
-        key = strdup(key);
+        char* new_key = malloc(sizeof(char)*(strlen(key)+1));
+        strcpy(new_key, key);
+        key = new_key;
         if(key == NULL){
             return NULL;
         }
@@ -80,7 +82,7 @@ const char* ht_set(Ht* hashtable, const char* key, void* value){
     return ht_set_entry(hashtable->entries, hashtable->capacity, &hashtable->length, key, value);
 }
 
-int ht_expand(Ht* hashtable){
+u8 ht_expand(Ht* hashtable){
     size_t new_capacity = hashtable->capacity*2;
     if(new_capacity < hashtable->capacity){
         return 0;
@@ -110,7 +112,7 @@ Hti ht_iter(Ht* hashtable){
     return iterator;
 }
 
-int ht_next(Hti* iterator){
+u8 ht_next(Hti* iterator){
     Ht* hashtable = iterator->hashtable;
     while(iterator->index < hashtable->capacity){
         size_t i = iterator->index;

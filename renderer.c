@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "hashtable.h"
 #include "opengl.h"
+#include "utils.h"
 #include <stdio.h>
 
 Renderable** renderables;
@@ -33,11 +34,9 @@ void renderer_update(Camera* camera){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    Mat4 p = mat4_id();
-    p = perspective_projection_matrix(rad(camera->field_of_view),
+    Mat4 p = perspective_projection_matrix(rad(camera->field_of_view),
                                 (f32)current_window_size.width/(f32)current_window_size.height,
                                 camera->near_plane, camera->far_plane);
-
     Vec3 forward;
     f32 x = camera->rotation.x;
     f32 y = camera->rotation.y;
@@ -62,10 +61,10 @@ void renderer_update(Camera* camera){
 
         material_set_uniform(renderables[i]->material, "mvp", &mvp.m);
 
-        // @Note Use uniform buffer object to upload in bulk
         Shader* curr_shader = renderables[i]->material->shader;
         glUseProgram(curr_shader->program);
 
+        // @Note Use uniform buffer object to upload in bulk
         Hti it = ht_iter(renderables[i]->material->uniforms_values);
         while(ht_next(&it)){
             Uniform* uniform = ht_get(curr_shader->uniforms, it.key);
@@ -84,14 +83,13 @@ void renderer_update(Camera* camera){
             glBindTexture(GL_TEXTURE_2D, renderables[i]->material->texture->id);
         }
 
+        glPolygonMode(GL_FRONT_AND_BACK, renderables[i]->rasterization_mode);
         if(renderables[i]->mesh->draw_arrays){
             glDrawArrays(GL_LINES, 0, renderables[i]->mesh->draw_count);
         }
         else{
-            glPolygonMode(GL_FRONT_AND_BACK, renderables[i]->rasterization_mode);
+            glDrawElements(GL_TRIANGLES, renderables[i]->mesh->draw_count, GL_UNSIGNED_INT, 0);
         }
-
-        glDrawElements(GL_TRIANGLES, renderables[i]->mesh->draw_count, GL_UNSIGNED_INT, 0);
     }
 
     renderer_swap_buffers();
@@ -291,26 +289,37 @@ void free_shader(Shader* shader){
 
 Texture* init_texture(const char* image_filepath, u32 texture_wrapping_mode,
                     u32 texture_min_filtering_mode, u32 texture_mag_filtering_mode){
-    i32 width, height, channels;
-    u8* data = stbi_load(image_filepath, &width, &height, &channels, 0);
-    if(!data){
+    u32 width, height;
+    u8 channels;
+    u8* image_data = load_image(image_filepath, &width, &height, &channels);
+    if(image_data == NULL){
         error("init_texture: Can't load image file `%s`", image_filepath);
         return NULL;
     }
-
     Texture* texture = malloc(sizeof(Texture));
     u32 texture_id;
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, texture_wrapping_mode);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, texture_wrapping_mode);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_min_filtering_mode);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_mag_filtering_mode);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height,
-                0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    stbi_image_free(data);
+    u32 texture_type;
+    switch(channels){
+        case 24:
+            texture_type = GL_RGB;
+            break;
+        case 32:
+            texture_type = GL_RGBA;
+            break;
+        default:
+            error("init_texture: Unknown texture format");
+            return NULL;
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, texture_type, width, height,
+                0, texture_type, GL_UNSIGNED_BYTE, image_data);
+    free_image(image_data);
     glGenerateMipmap(GL_TEXTURE_2D);
     texture->id = texture_id;
     return texture;

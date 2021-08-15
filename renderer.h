@@ -4,7 +4,7 @@
 #include "math.h"
 #include "opengl.h"
 #include "fast_obj.h" // @Note replace this with mesh.h
-#include "stb_image.h" // @Note replace this with image.h
+#include "image.h"
 #include "hashtable.h"
 
 #include <math.h>
@@ -81,7 +81,7 @@ void renderer_set_viewport(u32 x, u32 y, u32 width, u32 height);
 void renderer_set_swap_interval(u32 interval);
 void renderer_clear(Vec4 clear_color);
 void renderer_swap_buffers();
-void renderer_update();
+void renderer_update(Camera* camera);
 Renderable* init_renderable(Mesh* mesh, Material* material);
 void free_renderable(Renderable* renderable);
 Material* init_material(Shader* shader);

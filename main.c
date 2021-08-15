@@ -1,5 +1,3 @@
-#include <math.h>
-
 #include "window.h"
 #include "time.h"
 #include "types.h"
@@ -7,8 +5,10 @@
 #include "math.h"
 #include "renderer.h"
 #include "hashtable.h"
+#include "image.h"
 
 #include <stdio.h>
+#include <math.h>
 
 void resize_callback(){
     renderer_set_viewport(0, 0, current_window_size.width, current_window_size.height);
@@ -38,23 +38,29 @@ f32 mouse_sensitivity = 0.002;
 void mouse_callback(MousePos mouse_pos){
     main_camera.rotation.x -= mouse_pos.x*mouse_sensitivity;
     main_camera.rotation.y -= mouse_pos.y*mouse_sensitivity;
-    if(main_camera.rotation.y > rad(89.0)) {
+    if(main_camera.rotation.y > rad(89.0)){
         main_camera.rotation.y = rad(89.0);
     }
-    if (main_camera.rotation.y < -rad(89.0)) {
+    if(main_camera.rotation.y < -rad(89.0)){
         main_camera.rotation.y = -rad(89.0);
     }
 }
 
 Camera main_camera;
 
+int fly = 1;
 void handle_input(f32 delta_time){
     f32 speed = 4;
     Vec3 forward;
     f32 x = main_camera.rotation.x;
     f32 y = main_camera.rotation.y;
     forward.x = cos(x)*cos(y);
-    forward.y = 0;
+    if(fly){
+        forward.y = sin(y);
+    }
+    else{
+        forward.y = 0;
+    }
     forward.z = sin(x)*cos(y);
     forward = vec3_normalize(forward);
     Vec3 right = vec3_normalize(vec3_cross(forward, (Vec3){0.0, 1.0, 0.0}));
@@ -100,7 +106,7 @@ i32 main(){
     Mesh* cube_mesh = mesh_from_obj("models/cube.obj");
     Mesh* plane_mesh = mesh_from_obj("models/plane.obj");
 
-    Texture* texture = init_texture("textures/texture.png", WRAP_REPEAT,
+    Texture* texture = init_texture("textures/texture.tex", WRAP_REPEAT,
                         FILTER_LINEAR, FILTER_LINEAR);
 
     Shader* plain_shader = init_shader("shaders/plain_vertex.glsl", "shaders/plain_fragment.glsl");
@@ -119,15 +125,12 @@ i32 main(){
     material_set_uniform(simple_material1, "color", &v1.v);
     Vec3 v2 = (Vec3){0, 0, 0};
     material_set_uniform(simple_material2, "color", &v2.v);
-    // free_mesh(cube_mesh);
 
     u64 last_time = get_time()-10000;
-
     while(1){
         u64 current_time = get_time();
         f32 delta_time = ((f32)(current_time-last_time))/1000000;
         last_time = current_time;
-
         handle_input(delta_time);
         if(!window_event()) break;
 

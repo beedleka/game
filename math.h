@@ -83,13 +83,21 @@ Mat4 mat4_mat4_add(Mat4 a, Mat4 b);
 Mat4 mat4_mat4_mul(Mat4 a, Mat4 b);
 Vec4 mat4_vec4_mul(Mat4 a, Vec4 b);
 
+f32 vec2_magnitude(Vec2 v);
+Vec2 vec2_normalize(Vec2 v);
+Vec2 vec2_add(Vec2 a, Vec2 b);
+Vec2 vec2_sub(Vec2 a, Vec2 b);
+Vec2 vec2_scale(Vec2 v, f32 s);
+f32 vec2_dot(Vec2 a, Vec2 b);
+Vec2 vec2_lerp(Vec2 a, Vec2 b, f32 t);
+
 Vec3 vec3_cross(Vec3 a, Vec3 b);
-f32 vec3_dot(Vec3 a, Vec3 b);
 f32 vec3_magnitude(Vec3 v);
 Vec3 vec3_normalize(Vec3 v);
 Vec3 vec3_add(Vec3 a, Vec3 b);
 Vec3 vec3_sub(Vec3 a, Vec3 b);
 Vec3 vec3_scale(Vec3 v, f32 s);
+f32 vec3_dot(Vec3 a, Vec3 b);
 Vec3 vec3_lerp(Vec3 a, Vec3 b, f32 t);
 
 f32 vec4_magnitude(Vec4 v);

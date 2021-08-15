@@ -150,6 +150,50 @@ f32 rad(f32 deg){
     return deg*PI/180;
 }
 
+f32 vec2_magnitude(Vec2 v){
+    return sqrt(v.x*v.x + v.y*v.y);
+}
+
+Vec2 vec2_normalize(Vec2 v){
+    f32 m = vec2_magnitude(v);
+    if(m == 0) return (Vec2){0, 0};
+    return (Vec2){
+        v.x/m,
+        v.y/m
+    };
+}
+
+Vec2 vec2_add(Vec2 a, Vec2 b){
+    return (Vec2){
+        a.x+b.x,
+        a.y+b.y
+    };
+}
+
+Vec2 vec2_sub(Vec2 a, Vec2 b){
+    return (Vec2){
+        a.x-b.x,
+        a.y-b.y
+    };
+}
+
+Vec2 vec2_scale(Vec2 v, f32 s){
+    return (Vec2){
+        v.x*s,
+        v.y*s
+    };
+}
+
+f32 vec2_dot(Vec2 a, Vec2 b){
+    return a.x*b.x + a.y*b.y;
+}
+
+Vec2 vec2_lerp(Vec2 a, Vec2 b, f32 t){
+    t = t < 0 ? 0 : t;
+    t = t > 1 ? 1 : t;
+    return vec2_add(vec2_scale(a, t), vec2_scale(b, 1-t));
+}
+
 Vec3 vec3_cross(Vec3 a, Vec3 b){
     return (Vec3){
         a.y*b.z-a.z*b.y,

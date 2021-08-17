@@ -21,10 +21,10 @@ typedef enum{
     PRESSED
 } KeyState;
 
-typedef struct MousePos{
-    i32 x;
-    i32 y;
-} MousePos;
+typedef struct MouseMove{
+    i32 dx;
+    i32 dy;
+} MouseMove;
 
 #define MAX_KEYCODES 255 // @Note maybe this should be different for each system?
 extern KeyState keyboard[MAX_KEYCODES];
@@ -39,7 +39,7 @@ u8 window_event();
 void window_set_title(const char* title);
 void window_set_resize_callback(void (*callback)());
 void window_set_keyboard_callback(void (*callback)(u32, KeyState));
-void window_set_mouse_callback(void (*callback)(MousePos));
+void window_set_mouse_callback(void (*callback)(MouseMove));
 void window_set_state(WindowState state);
 
 #ifdef _WIN32
@@ -62,7 +62,6 @@ void win32_print_last_error(char* msg);
 #define KEY_TAB VK_TAB
 #define KEY_CLEAR VK_CLEAR
 #define KEY_RETURN VK_RETURN
-#define KEY_SHIFT VK_SHIFT
 #define KEY_LEFTCTRL VK_LCONTROL
 #define KEY_RIGHTCTRL VK_RCONTROL
 #define KEY_LEFTSHIFT VK_LSHIFT
@@ -136,6 +135,81 @@ void win32_print_last_error(char* msg);
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include  <X11/Xatom.h>
+#include <X11/extensions/XInput2.h>
+
+#define KEY_BACKSPACE 22
+#define KEY_TAB 23
+// #define KEY_CLEAR @Note
+#define KEY_RETURN 36
+#define KEY_LEFTCTRL 37
+#define KEY_RIGHTCTRL 105
+#define KEY_LEFTSHIFT 50
+#define KEY_RIGHTSHIFT 62
+#define KEY_ALT 64
+// #define KEY_PAUSE
+#define KEY_CAPSLOCK 66
+#define KEY_ESCAPE 9
+#define KEY_SPACE 65
+#define KEY_PAGEUP 112
+#define KEY_PAGEDOWN 117
+#define KEY_HOME 110
+#define KEY_LEFT 113
+#define KEY_RIGHT 114
+#define KEY_UP 111
+#define KEY_DOWN 116
+// #define KEY_SELECT
+// #define KEY_PRINTSCREEN
+#define KEY_INSERT 118
+#define KEY_DELETE 119
+#define KEY_0 19
+#define KEY_1 10
+#define KEY_2 11
+#define KEY_3 12
+#define KEY_4 13
+#define KEY_5 14
+#define KEY_6 15
+#define KEY_7 16
+#define KEY_8 17
+#define KEY_9 18
+#define KEY_A 38
+#define KEY_B 56
+#define KEY_C 54
+#define KEY_D 40
+#define KEY_E 26
+#define KEY_F 41
+#define KEY_G 42
+#define KEY_H 43
+#define KEY_I 31
+#define KEY_J 44
+#define KEY_K 45
+#define KEY_L 46
+#define KEY_M 58
+#define KEY_N 57
+#define KEY_O 32
+#define KEY_P 33
+#define KEY_Q 24
+#define KEY_R 27
+#define KEY_S 39
+#define KEY_T 28
+#define KEY_U 30
+#define KEY_V 55
+#define KEY_W 25
+#define KEY_X 53
+#define KEY_Y 29
+#define KEY_Z 52
+#define KEY_F1 67
+#define KEY_F2 68
+#define KEY_F3 69
+#define KEY_F4 70
+#define KEY_F5 71
+#define KEY_F6 72
+#define KEY_F7 73
+#define KEY_F8 74
+#define KEY_F9 75
+#define KEY_F10 76
+#define KEY_F11 95
+#define KEY_F12 96
 
 extern Display* display;
 extern Window window;

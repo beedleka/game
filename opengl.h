@@ -6,7 +6,20 @@
 #include "math.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+
+#include <windows.h>
+#include <GL/gl.h>
+
+#elif __linux__
+
+#include <GL/gl.h>
+#include <GL/glx.h>
+
+#endif
 
 typedef struct GLExtensions{
     u8 GL_ARB_compute_shader_available;
@@ -106,7 +119,11 @@ typedef void* GLeglClientBufferEXT;
 typedef void* GLeglImageOES;
 typedef char GLchar;
 typedef char GLcharARB;
+
+#ifdef _WIN32
 typedef size_t GLsizeiptr;
+#endif
+
 
 typedef GLuint (APIENTRY* glCreateShader_TYPE)(GLenum);
 typedef void (APIENTRY* glShaderSource_TYPE)(GLuint, GLsizei, const GLchar**, const GLint*);
@@ -172,14 +189,7 @@ extern glGetBufferSubData_TYPE glGetBufferSubData;
 extern glDeleteVertexArrays_TYPE glDeleteVertexArrays;
 extern glDeleteBuffers_TYPE glDeleteBuffers;
 
-#if defined(_WIN32) && !defined(APIENTRY)
-#define APIENTRY __stdcall
-#endif
-
 #ifdef _WIN32
-
-#include <windows.h>
-#include <GL/gl.h>
 
 #define WGL_SAMPLES_ARB 0x2042
 #define WGL_DRAW_TO_WINDOW_ARB 0x2001
@@ -210,9 +220,6 @@ typedef BOOL (APIENTRY* wglChoosePixelFormatARB_TYPE)(HDC, const int*, const FLO
 typedef BOOL (APIENTRY* wglSwapIntervalEXT_TYPE)(int);
 
 #elif __linux__
-
-#include <GL/gl.h>
-#include <GL/glx.h>
 
 typedef struct GLXExtensions{
     u8 GLX_ARB_create_context_available;

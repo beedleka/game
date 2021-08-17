@@ -23,8 +23,8 @@ u8 str_equals(const char* begin, ptr size, const char* to){
 void error(const char* format, ...){
     va_list args;
     va_start(args, format);
-    printf("[ERROR] ");
-    fflush(stdout);
+    fprintf(stderr, "[ERROR] ");
+    fflush(stderr);
     vfprintf(stderr, format, args);
     printf("\n");
     va_end(args);
@@ -33,8 +33,8 @@ void error(const char* format, ...){
 void warn(const char* format, ...){
     va_list args;
     va_start(args, format);
-    printf("[WARN] ");
-    fflush(stdout);
+    fprintf(stderr, "[WARN] ");
+    fflush(stderr);
     vfprintf(stderr, format, args);
     printf("\n");
     va_end(args);
@@ -43,8 +43,8 @@ void warn(const char* format, ...){
 void info(const char* format, ...){
     va_list args;
     va_start(args, format);
-    printf("[INFO] ");
-    fflush(stdout);
+    fprintf(stderr, "[INFO] ");
+    fflush(stderr);
     vprintf(format, args);
     printf("\n");
     va_end(args);

@@ -35,9 +35,9 @@ void keyboard_callback(u32 keycode, KeyState key_state){
 }
 
 f32 mouse_sensitivity = 0.002;
-void mouse_callback(MousePos mouse_pos){
-    main_camera.rotation.x -= mouse_pos.x*mouse_sensitivity;
-    main_camera.rotation.y -= mouse_pos.y*mouse_sensitivity;
+void mouse_callback(MouseMove mouse_move){
+    main_camera.rotation.x -= mouse_move.dx*mouse_sensitivity;
+    main_camera.rotation.y -= mouse_move.dy*mouse_sensitivity;
     if(main_camera.rotation.y > rad(89.0)){
         main_camera.rotation.y = rad(89.0);
     }
@@ -103,13 +103,13 @@ i32 main(){
     init_camera(&main_camera, (Vec3){0, 1, -5}, 90, 0.1, 10000,
                 (Vec4){1, 1, 1, 1});
 
-    Mesh* cube_mesh = mesh_from_obj("models/cube.obj");
-    Mesh* plane_mesh = mesh_from_obj("models/plane.obj");
+    Mesh* cube_mesh = mesh_from_obj("assets/models/cube.obj");
+    Mesh* plane_mesh = mesh_from_obj("assets/models/plane.obj");
 
-    Texture* texture = init_texture("textures/texture.tex", WRAP_REPEAT,
+    Texture* texture = init_texture("assets/textures/texture.tex", WRAP_REPEAT,
                         FILTER_LINEAR, FILTER_LINEAR);
 
-    Shader* plain_shader = init_shader("shaders/plain_vertex.glsl", "shaders/plain_fragment.glsl");
+    Shader* plain_shader = init_shader("assets/shaders/plain_vertex.glsl", "assets/shaders/plain_fragment.glsl");
 
     Material* simple_material1 = init_material(plain_shader);
     simple_material1->texture = texture;

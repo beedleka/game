@@ -452,7 +452,7 @@ u8 opengl_init(i32 opengl_major_version, i32 opengl_minor_version, u32 multisamp
         return 1;
     }
 
-    u32 visual_attributes[] = {
+    i32 visual_attributes[] = {
         GLX_X_RENDERABLE, 1,
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
@@ -463,10 +463,11 @@ u8 opengl_init(i32 opengl_major_version, i32 opengl_minor_version, u32 multisamp
         GLX_BLUE_SIZE, 1,
         GLX_ALPHA_SIZE, 8,
         GLX_DEPTH_SIZE, 24,
+        GLX_SAMPLES, multisample,
         0
     };
 
-    u32 num_framebuffer_config = 0;
+    i32 num_framebuffer_config = 0;
     GLXFBConfig* framebuffer_config = glXChooseFBConfig(display,
                                     DefaultScreen(display), visual_attributes, &num_framebuffer_config);
     if(!framebuffer_config){
@@ -480,7 +481,7 @@ u8 opengl_init(i32 opengl_major_version, i32 opengl_minor_version, u32 multisamp
         return 1;
     }
 
-    const u32 context_attributes[] = {
+    const i32 context_attributes[] = {
         GLX_CONTEXT_MAJOR_VERSION_ARB, opengl_major_version,
         GLX_CONTEXT_MINOR_VERSION_ARB, opengl_minor_version,
         GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
@@ -510,8 +511,8 @@ u8 opengl_init(i32 opengl_major_version, i32 opengl_minor_version, u32 multisamp
 
     glXMakeCurrent(display, window, opengl_context);
 
-    u32 major;
-    u32 minor;
+    i32 major;
+    i32 minor;
     glGetIntegerv(GL_MAJOR_VERSION, &major);
     glGetIntegerv(GL_MINOR_VERSION, &minor);
     info("Loaded OpenGL context %d.%d", major, minor);

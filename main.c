@@ -48,7 +48,7 @@ void mouse_callback(MouseMove mouse_move){
 
 Camera main_camera;
 
-int fly = 1;
+int fly = 0;
 void handle_input(f32 delta_time){
     f32 speed = 4;
     Vec3 forward;

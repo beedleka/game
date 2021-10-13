@@ -408,7 +408,7 @@ glXSwapIntervalMESA_TYPE glXSwapIntervalMESA;
 GLXExtensions available_glx_extensions = {0};
 
 u8 load_glx_functions(){
-    if(available_glx_extensions.MESA_swap_control_available){
+    if(available_glx_extensions.GLX_MESA_swap_control_available){
         glXSwapIntervalMESA = (glXSwapIntervalMESA_TYPE)glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalMESA");
     }
 
@@ -427,7 +427,6 @@ u8 opengl_init(i32 opengl_major_version, i32 opengl_minor_version, u32 multisamp
     const char* begin = glx_extensions_string;
     const char* end = begin;
     ptr size;
-
     while(*begin != '\0'){
         while(*begin == ' ') begin++;
         end = begin;
@@ -437,7 +436,7 @@ u8 opengl_init(i32 opengl_major_version, i32 opengl_minor_version, u32 multisamp
         if(size > 0){
             if(str_equals(begin, size, "GLX_ARB_create_context")) available_glx_extensions.GLX_ARB_create_context_available = 1;
             if(str_equals(begin, size, "GLX_ARB_create_context_profile")) available_glx_extensions.GLX_ARB_create_context_profile_available = 1;
-            if(str_equals(begin, size, "MESA_swap_control")) available_glx_extensions.MESA_swap_control_available = 1;
+            if(str_equals(begin, size, "GLX_MESA_swap_control")) available_glx_extensions.GLX_MESA_swap_control_available = 1;
         }
         begin = end;
     }
@@ -544,7 +543,7 @@ void opengl_set_viewport(u32 x, u32 y, u32 width, u32 height){
     glViewport(x, y, width, height);
 }
 
-void opengl_clear(Vec4 clear_color){
+void opengl_clear(RGBA clear_color){
     glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

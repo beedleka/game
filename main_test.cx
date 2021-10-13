@@ -1,0 +1,169 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+#include "utils.h"
+#include "types.h"
+#include "compression.h"
+
+typedef struct BitReader{
+	u8* buffer;
+	u8* current;
+	u32 buffer_size;
+	u8 bits_buffer;
+	u8 bit_position;
+} BitReader;
+
+void refill_reader(BitReader* reader){
+	assert((reader->current-reader->buffer) < reader->buffer_size);
+	reader->bits_buffer |= *reader->current;
+	reader->current++;
+	reader->bit_position = 0;
+}
+
+u8 read_bit(BitReader* reader){
+	u8 bit = reader->bits_buffer >> 7;
+	reader->bits_buffer <<= 1;
+	reader->bit_position++;
+	if(reader->bit_position >= 8){
+		refill_reader(reader);
+	}
+	return bit;
+}
+
+typedef struct BitWriter{
+	u8* buffer;
+	u8* current;
+	u32 buffer_size;
+	u8 bits_buffer;
+	u8 bit_position;
+} BitWriter;
+
+void flush_writer(BitWriter* writer){
+	if(writer->bit_position > 0){
+		assert((writer->current-writer->buffer) < writer->buffer_size);
+		*writer->current = writer->bits_buffer;
+		writer->current++;
+		writer->bits_buffer = 0;
+		writer->bit_position = 0;
+	}
+}
+
+void write_bit(BitWriter* writer, u8 bit){
+	assert(bit == 1 || bit == 0);
+	writer->bits_buffer = (writer->bits_buffer << 1) | bit;
+	writer->bit_position++;
+	if(writer->bit_position >= 8){
+		flush_writer(writer);
+	}
+}
+
+void write_bits(BitWriter* writer, u8 bits, u8 n){
+	writer->bits_buffer = (writer->bits_buffer << n) | bits;
+	writer->bit_position += n;
+	if(writer->bit_position >= 8){
+		flush_writer(writer);
+	}
+}
+
+void init_bit_writer(BitWriter* bitwriter, u8* buffer, u32 size){
+	bitwriter->buffer = buffer;
+	bitwriter->current = buffer;
+	bitwriter->buffer_size = size;
+	bitwriter->bits_buffer = 0;
+	bitwriter->bit_position = 0;
+}
+
+void init_bit_reader(BitReader* bitreader, u8* buffer, u32 size){
+	bitreader->buffer = buffer;
+	bitreader->current = buffer;
+	bitreader->buffer_size = size;
+	bitreader->bits_buffer = 0;
+	bitreader->bit_position = 0;
+}
+
+typedef struct HuffmanNode{
+	u32 freq;
+	u8 symbol;
+	struct HuffmanNode* l;
+	struct HuffmanNode* r;
+} HuffmanNode;
+
+u32 huffman_node_compare(const HuffmanNode* a, const HuffmanNode* b){
+	return a->freq - b->freq;
+}
+
+#define MAX_HUFFMAN_SYMBOLS 512
+
+typedef struct HuffmanEncoder{
+	BitWriter* writer;
+	u8 codes[MAX_HUFFMAN_SYMBOLS/2];
+	u8 codes_length[MAX_HUFFMAN_SYMBOLS/2];
+	HuffmanNode nodes[MAX_HUFFMAN_SYMBOLS];
+} HuffmanEncoder;
+
+void init_huffman_encoder(HuffmanEncoder* encoder, BitWriter* writer){
+	encoder->writer = writer;
+	encoder->codes[0] = 1;
+	encoder->codes_length[0] = 1;
+}
+
+void huffman_encode(HuffmanEncoder* encoder, u8 symbol){
+	write_bits(encoder->writer, encoder->codes[symbol], encoder->codes_length[symbol]);
+}
+
+void huffman_scan(HuffmanEncoder* encoder, u8 symbol){
+	encoder->nodes[symbol].freq++;
+}
+
+void huffman_build_table(HuffmanEncoder* encoder){
+	u32 active_symbols = 0;
+	HuffmanNode* heap[MAX_HUFFMAN_SYMBOLS/2];
+	for(u32 i = 0; i < MAX_HUFFMAN_SYMBOLS; i++){
+		if(encoder->nodes[i].freq > 0){
+			encoder->nodes[active_symbols] = encoder->nodes[i];
+			heap[active_symbols] = &encoder->nodes[i];
+			active_symbols++;
+		}
+	}
+}
+
+/////////////////////////////////
+
+void print_buffer(u8* buffer, size_t size){
+	printf("Buffer:\n");
+	for(u32 i = 0; i < size/sizeof(u8); i++){
+		print_bits(buffer[i]);
+		printf("\n");
+	}
+}
+
+u32 main(){
+	u8 buffer[10] = {0};
+	print_buffer(buffer, sizeof(buffer));
+
+	BitWriter writer;
+	init_bit_writer(&writer, buffer, sizeof(buffer));
+
+	HuffmanEncoder encoder;
+	init_huffman_encoder(&encoder, &writer);
+
+	huffman_encode(&encoder, 0);
+	flush_writer(&writer);
+
+	print_buffer(buffer, sizeof(buffer));
+	// write_bit(&bitwriter, 1);
+	// write_bit(&bitwriter, 1);
+	// write_bit(&bitwriter, 0);
+	// write_bit(&bitwriter, 1);
+
+	// print_buffer(buffer, sizeof(buffer));
+	// printf("\n");
+	// BitReader bitreader;
+	// init_bit_reader(&bitreader, buffer, sizeof(buffer));
+	// refill_reader(&bitreader);
+	// for(u32 i = 0; i < 31; i++){
+	// 	printf("%d", read_bit(&bitreader));
+	// }
+	return 0;
+}

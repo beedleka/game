@@ -6,7 +6,9 @@
 #include "fast_obj.h" // @Note replace this with mesh.h
 #include "image.h"
 #include "hashtable.h"
+#include "utils.h"
 
+#include <stdio.h>
 #include <math.h>
 
 #define RASTERIZATION_SOLID GL_FILL
@@ -34,7 +36,7 @@ typedef struct Camera{
     f32 field_of_view;
     f32 near_plane;
     f32 far_plane;
-    Vec4 clear_color;
+    RGBA clear_color;
 } Camera;
 
 typedef struct Mesh{
@@ -79,7 +81,7 @@ extern Camera main_camera;
 u8 renderer_init();
 void renderer_set_viewport(u32 x, u32 y, u32 width, u32 height);
 void renderer_set_swap_interval(u32 interval);
-void renderer_clear(Vec4 clear_color);
+void renderer_clear(RGBA clear_color);
 void renderer_swap_buffers();
 void renderer_update(Camera* camera);
 Renderable* init_renderable(Mesh* mesh, Material* material);
@@ -95,7 +97,7 @@ Mesh* mesh_from_obj(const char* obj_filepath);
 void free_mesh(Mesh* mesh);
 void init_camera(Camera* camera, Vec3 position, f32 field_of_view, f32 near_plane,
                 f32 far_plane,
-                Vec4 clear_color);
+                RGBA clear_color);
 void renderer_close();
 void material_set_uniform(Material* material, const char* name, void* value);
 void shader_upload_uniform(Uniform* uniform, void* value);

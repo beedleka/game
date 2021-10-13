@@ -13,7 +13,7 @@ typedef struct HtEntry{
 typedef struct Ht{
     HtEntry* entries;
     size_t capacity;
-    size_t length;
+    size_t count;
 } Ht;
 
 typedef struct Hti{
@@ -30,7 +30,7 @@ typedef struct Hti{
 Ht* ht_create();
 void ht_destroy(Ht* hashtable);
 void* ht_get(Ht* hashtable, const char* key);
-const char* ht_set_entry(HtEntry* entries, size_t capacity, size_t* length, const char* key, void* value);
+const char* ht_set_entry(HtEntry* entries, size_t capacity, size_t* count, const char* key, void* value);
 const char* ht_set(Ht* hashtable, const char* key, void* value);
 u8 ht_expand(Ht* hashtable);
 Hti ht_iter(Ht* hashtable);

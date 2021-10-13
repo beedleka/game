@@ -1,8 +1,4 @@
 #include "renderer.h"
-#include "hashtable.h"
-#include "opengl.h"
-#include "utils.h"
-#include <stdio.h>
 
 Renderable** renderables;
 u32 living_renderables = 0;
@@ -20,7 +16,7 @@ void renderer_set_swap_interval(u32 interval){
     opengl_set_swap_interval(interval);
 }
 
-void renderer_clear(Vec4 clear_color){
+void renderer_clear(RGBA clear_color){
     opengl_clear(clear_color);
 }
 
@@ -195,7 +191,7 @@ Mesh* mesh_from_obj(const char* obj_filepath){
         }
     }
     Hti it = ht_iter(tmp_vertices);
-    u32 vertex_count = tmp_vertices->length;
+    u32 vertex_count = tmp_vertices->count;
 
     f32* vertices = malloc(vertex_count*sizeof(f32)*8);
     while(ht_next(&it)){
@@ -331,7 +327,7 @@ void free_texture(Texture* texture){
 
 void init_camera(Camera* camera, Vec3 position, f32 field_of_view, f32 near_plane,
                 f32 far_plane,
-                Vec4 clear_color){
+                RGBA clear_color){
     camera->position = position;
     camera->rotation = (Vec3){PI/2, 0, 0};
     camera->field_of_view = field_of_view;

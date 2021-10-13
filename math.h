@@ -29,11 +29,6 @@ typedef union{
         f32 y;
         f32 z;
     };
-    struct{
-        f32 r;
-        f32 g;
-        f32 b;
-    };
 } Vec3;
 
 typedef union{
@@ -43,12 +38,6 @@ typedef union{
         f32 y;
         f32 z;
         f32 w;
-    };
-    struct{
-        f32 r;
-        f32 g;
-        f32 b;
-        f32 a;
     };
 } Vec4;
 

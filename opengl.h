@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "window.h"
 #include "math.h"
+#include "color.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +31,7 @@ void opengl_swap_buffers();
 u32 opengl_load_shader(const char* vertex_shader_filepath, const char* fragment_shader_filepath);
 void opengl_set_swap_interval(u32 interval);
 void opengl_set_viewport(u32 x, u32 y, u32 width, u32 height);
-void opengl_clear(Vec4 clear_color);
+void opengl_clear(RGBA clear_color);
 
 #define GL_FLOAT_VEC2 0x8B50
 #define GL_FLOAT_VEC3 0x8B51
@@ -224,7 +225,7 @@ typedef BOOL (APIENTRY* wglSwapIntervalEXT_TYPE)(int);
 typedef struct GLXExtensions{
     u8 GLX_ARB_create_context_available;
     u8 GLX_ARB_create_context_profile_available;
-    u8 MESA_swap_control_available;
+    u8 GLX_MESA_swap_control_available;
 } GLXExtensions;
 
 typedef void (*glXSwapIntervalMESA_TYPE)(int);

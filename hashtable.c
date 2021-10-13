@@ -8,7 +8,7 @@ Ht* ht_create(){
     }
 
     hashtable->capacity = INITIAL_CAPACITY;
-    hashtable->length = 0;
+    hashtable->count = 0;
 
     hashtable->entries = calloc(INITIAL_CAPACITY, sizeof(HtEntry));
     if(hashtable->entries == NULL){
@@ -41,7 +41,7 @@ void* ht_get(Ht* hashtable, const char* key){
     return NULL;
 }
 
-const char* ht_set_entry(HtEntry* entries, size_t capacity, size_t* length,
+const char* ht_set_entry(HtEntry* entries, size_t capacity, size_t* count,
     const char* key, void* value){
     u64 hash = fnv1_hash(key);
     size_t index = (size_t)(hash % (u64)capacity);
@@ -55,14 +55,14 @@ const char* ht_set_entry(HtEntry* entries, size_t capacity, size_t* length,
         if(index >= capacity) index = 0;
     }
 
-    if(length != NULL){
+    if(count != NULL){
         char* new_key = malloc(sizeof(char)*(strlen(key)+1));
         strcpy(new_key, key);
         key = new_key;
         if(key == NULL){
             return NULL;
         }
-        (*length)++;
+        (*count)++;
     }
 
     entries[index].key = key;
@@ -75,11 +75,11 @@ const char* ht_set(Ht* hashtable, const char* key, void* value){
         return NULL;
     }
 
-    if(hashtable->length >= hashtable->capacity/2){
+    if(hashtable->count >= hashtable->capacity/2){
         if(!ht_expand(hashtable)) return NULL;
     }
 
-    return ht_set_entry(hashtable->entries, hashtable->capacity, &hashtable->length, key, value);
+    return ht_set_entry(hashtable->entries, hashtable->capacity, &hashtable->count, key, value);
 }
 
 u8 ht_expand(Ht* hashtable){

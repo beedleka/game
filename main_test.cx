@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "types.h"
 #include "compression.h"
+#include "heap.h"
 
 typedef struct BitReader{
 	u8* buffer;
@@ -89,23 +90,25 @@ typedef struct HuffmanNode{
 	struct HuffmanNode* r;
 } HuffmanNode;
 
-u32 huffman_node_compare(const HuffmanNode* a, const HuffmanNode* b){
-	return a->freq - b->freq;
+u32 huffman_node_compare(void* a, void* b){
+	return ((HuffmanNode*)a)->freq - ((HuffmanNode*)b)->freq;
 }
 
-#define MAX_HUFFMAN_SYMBOLS 512
+#define MAX_HUFFMAN_SYMBOLS 256
 
 typedef struct HuffmanEncoder{
 	BitWriter* writer;
-	u8 codes[MAX_HUFFMAN_SYMBOLS/2];
-	u8 codes_length[MAX_HUFFMAN_SYMBOLS/2];
-	HuffmanNode nodes[MAX_HUFFMAN_SYMBOLS];
+	u8 codes[MAX_HUFFMAN_SYMBOLS];
+	u8 codes_length[MAX_HUFFMAN_SYMBOLS];
+	HuffmanNode nodes[MAX_HUFFMAN_SYMBOLS*2];
 } HuffmanEncoder;
 
 void init_huffman_encoder(HuffmanEncoder* encoder, BitWriter* writer){
 	encoder->writer = writer;
-	encoder->codes[0] = 1;
-	encoder->codes_length[0] = 1;
+	for(int i = 0; i < MAX_HUFFMAN_SYMBOLS; i++){
+		encoder->nodes[i].symbol = i;
+		encoder->nodes[i].freq = 0;
+	}
 }
 
 void huffman_encode(HuffmanEncoder* encoder, u8 symbol){
@@ -118,7 +121,7 @@ void huffman_scan(HuffmanEncoder* encoder, u8 symbol){
 
 void huffman_build_table(HuffmanEncoder* encoder){
 	u32 active_symbols = 0;
-	HuffmanNode* heap[MAX_HUFFMAN_SYMBOLS/2];
+	HuffmanNode* heap[MAX_HUFFMAN_SYMBOLS];
 	for(u32 i = 0; i < MAX_HUFFMAN_SYMBOLS; i++){
 		if(encoder->nodes[i].freq > 0){
 			encoder->nodes[active_symbols] = encoder->nodes[i];
@@ -126,6 +129,22 @@ void huffman_build_table(HuffmanEncoder* encoder){
 			active_symbols++;
 		}
 	}
+
+	Heap h;
+	init_heap(&h, MAX_HUFFMAN_SYMBOLS, HuffmanNode, huffman_node_compare);
+	// make_heap(heap, huffman_node_compare);
+
+	// for(int i = num_symbols; i > 1; i--){
+	// 	HuffmanNode* left_child = heap[0];
+	// 	pop_heap(heap, 0);
+	// 	HuffmanNode* right_child = heap[0];
+	// 	pop_heap(heap, 0);
+	// 	HuffmanNode* parent = &encoder->nodes[active_symbols+1];
+	// 	parent->freq = left_child->freq+right_child->freq;
+	// 	parent->l = left_child;
+	// 	parent->r = right_child;
+	// 	push_heap(heap, i-2);
+	// }
 }
 
 /////////////////////////////////

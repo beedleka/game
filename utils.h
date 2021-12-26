@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <limits.h>
+#include <inttypes.h>
 
 void print_bits_(void* var, size_t type);
 #define print_bits(var) print_bits_(&var, sizeof(var))

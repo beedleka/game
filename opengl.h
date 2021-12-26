@@ -121,10 +121,9 @@ typedef void* GLeglImageOES;
 typedef char GLchar;
 typedef char GLcharARB;
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(GLsizeiptr)
 typedef size_t GLsizeiptr;
 #endif
-
 
 typedef GLuint (APIENTRY* glCreateShader_TYPE)(GLenum);
 typedef void (APIENTRY* glShaderSource_TYPE)(GLuint, GLsizei, const GLchar**, const GLint*);

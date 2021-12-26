@@ -13,18 +13,18 @@ HSV rgb_to_hsv(RGB rgb){
 		f32 segment = (rgb.g-rgb.b)/chroma;
 		f32 shift = 0;
 		if(segment < 0){
-			shift = 360/60;
+			shift = (float)360/60;
 		}
 		hue = segment+shift;
 	}
 	else if(rgb_max == rgb.g){
 		f32 segment = (rgb.b-rgb.r)/chroma;
-		f32 shift = 120/60;
+		f32 shift = (float)120/60;
 		hue = segment+shift;
 	}
 	else if(rgb_max == rgb.b){
 		f32 segment = (rgb.r-rgb.g)/chroma;
-		f32 shift = 240/60;
+		f32 shift = (float)240/60;
 		hue = segment+shift;
 	}
 	assert(hue != -1);

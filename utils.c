@@ -1,5 +1,3 @@
-#include <limits.h>
-
 #include "utils.h"
 
 void load_file_to_buffer(FILE* file, char** buffer){
@@ -55,6 +53,6 @@ void info(const char* format, ...){
 void print_bits_(void* var, size_t type){
     size_t n_bits = type*CHAR_BIT;
     for(size_t i = 0; i < n_bits; i++){
-        printf("%ld", ((*(uintmax_t*)var) >> (n_bits-i-1)) & 1);
+        printf("%"PRIuMAX, ((*(uintmax_t*)var) >> (n_bits-i-1)) & 1);
     }
 }

@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <unistd.h>
 
 void resize_callback(){
     renderer_set_viewport(0, 0, current_window_size.width, current_window_size.height);
@@ -94,6 +95,7 @@ i32 main(){
     if(err){
         return 1;
     }
+
     renderer_set_swap_interval(1);
     confine_cursor_to_center = 0;
 
